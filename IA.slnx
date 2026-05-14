@@ -1,1 +1,3 @@
-<Solution />
+<Solution>
+  <Project Path="Smart.AI/Smart.AI.csproj" />
+</Solution>
