@@ -3,6 +3,7 @@ using Azure.AI.OpenAI;
 using OpenAI;
 using Service.IA.Provedor.Base;
 using Service.IA.Provedor.Interface;
+using System.ComponentModel;
 
 namespace Service.IA.Provedor
 {
@@ -10,7 +11,10 @@ namespace Service.IA.Provedor
     {
         public override string TagKey { get; set; } = "api-key";
 
-        public IProvedorBase SetProvedor(string url, string apiKey)
+        [Description("Provedor Azure OpenAI")]
+        public IProvedorBase SetProvedor(
+            [Description("URL do serviço Azure OpenAI.")] string url,
+            [Description("Chave de API do Azure OpenAI.")] string apiKey)
         => base.SetProvedor(url, new Tuple<string, string>(TagKey, apiKey), 10);
 
         internal override OpenAIClient SetProvedor()

@@ -2,5 +2,4 @@
   <Folder Name="/Service/">
     <Project Path="Service.IA/Service.IA.csproj" />
   </Folder>
-  <Project Path="Smart.AI/Smart.AI.csproj" />
 </Solution>

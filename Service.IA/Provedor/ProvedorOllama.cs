@@ -1,17 +1,37 @@
-﻿using OpenAI;
+﻿using Microsoft.Extensions.AI;
+using OllamaSharp;
+using OpenAI;
+using Service.IA.Model.Ollama;
 using Service.IA.Provedor.Base;
 using Service.IA.Provedor.Interface;
+using Service.IA.Util;
+using System.ComponentModel;
 
 namespace Service.IA.Provedor
 {
+    /// <summary>
+    /// Provedor concreto para integração com o <b>Ollama</b>, servidor local de modelos de linguagem (LLMs).
+    /// Herda a infraestrutura HTTP/OpenAI de <see cref="ProvedorBase"/> e sobrescreve os membros necessários
+    /// para apontar ao endpoint padrão do Ollama (<c>http://localhost:11434</c>) e usar a API nativa via <c>OllamaSharp</c>.
+    /// </summary>
     public class ProvedorOllama : ProvedorBase, IProvedorOllama
     {
         public override string UrlPadrao { get; set; } = "http://localhost:11434";
+
         public override string TagKey { get; set; } = "Authorization";
 
-        public IProvedorBase SetProvedor(string url, string apiKey)
+        [Description("Configura o provedor Ollama com URL e chave de API opcionais. " +
+            "Se url for nulo, usa UrlPadrao. A chave é formatada automaticamente como <c>Bearer {apiKey}</c>.")]
+        public IProvedorBase SetProvedor(
+            [Description("URL base do servidor Ollama. Usa UrlPadrao se nulo.")] string url, 
+            [Description("Chave de API (pode ser vazia para servidores locais sem autenticação).")] string apiKey)
             => base.SetProvedor(url ?? UrlPadrao, new Tuple<string, string>(TagKey, $"Bearer {apiKey}"), 10);
 
+        /// <summary>
+        /// Inicializa o <see cref="ProvedorBase.openAIClient"/> apontando para o endpoint <c>/v1</c> do Ollama,
+        /// que expõe uma API compatível com o formato OpenAI. A credencial é vazia pois o Ollama local não exige chave.
+        /// </summary>
+        /// <returns>O <see cref="OpenAIClient"/> configurado para o Ollama.</returns>
         internal override OpenAIClient SetProvedor()
         {
             openAIClient = new OpenAIClient(
@@ -22,6 +42,87 @@ namespace Service.IA.Provedor
                 });
 
             return openAIClient;
+        }
+
+        [Description("Retorna um IChatClient para o modelo especificado a partir do openAIClient configurado.")]
+        public override IChatClient SetMedolo(
+            [Description("Identificador do modelo de linguagem (ex.: \"gpt-4o\", \"llama3\").")] string model)
+        {
+            if (openAIClient == null) return null;
+            if (string.IsNullOrEmpty(model)) return null;
+
+            return new OllamaApiClient(_httpClient, model);
+        }
+
+        [Description("Retorna a lista de todos os modelos disponíveis no servidor Ollama via GET /api/models.")]
+        public async Task<List<ModelosOllama>> GetListaModelos()
+        {
+            var response = await _httpClient.GetAsync("/api/models");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var modelos = System.Text.Json.JsonSerializer.Deserialize<List<ModelosOllama>>(content);
+                return modelos;
+            }
+            return new List<ModelosOllama>();
+        }
+
+        [Description("Retorna os detalhes de um modelo específico no Ollama via POST /api/show com o nome do modelo.")]
+        public async Task<ModeloDetalhe> GetDetalhesModelo(
+            [Description("Nome do modelo para o qual os detalhes serão retornados.")] string model)
+        {
+            var response = await _httpClient.PostAsync("/api/show", Conversor.ConvertJson(new { model }));
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var modelos = System.Text.Json.JsonSerializer.Deserialize<ModeloDetalhe>(content);
+                return modelos;
+            }
+            return new ModeloDetalhe();
+        }
+
+        [Description("Puxa o modelo especificado do Ollama para o servidor local via POST /api/pull com o nome do modelo. " +
+            "Retorna a resposta do servidor, que pode indicar sucesso ou detalhes de erro.")]
+        public async Task<string> PegarModelo(
+            [Description("Nome do modelo que será puxado do servidor Ollama local.")] string model)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsync("/api/pull", Conversor.ConvertJson(new { model }));
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    return content;
+                }
+                return $"Erro: {response.StatusCode} - {response.ReasonPhrase}";
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
+        }
+
+        [Description("Exclui o modelo especificado do servidor Ollama local via POST /api/delete com o nome do modelo. " +
+            "Retorna a resposta do servidor, que pode indicar sucesso ou detalhes de erro.")]
+        public async Task<string> EscluirModelo(
+            [Description("Nome do modelo que será excluído do servidor Ollama local.")] string model)
+        {
+            try
+            {
+                var response = await _httpClient.PostAsync("/api/delete", Conversor.ConvertJson(new { model }));
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    return content;
+                }
+                return $"Erro: {response.StatusCode} - {response.ReasonPhrase}";
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
         }
     }
 }
