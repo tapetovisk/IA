@@ -6,10 +6,10 @@ namespace Service.IA.Agentes.Agente.Base
 {
     public class AgenteBase : IAgenteBase
     {
-        internal ChatClientAgent Agent { get; set; }
+        internal ChatClientAgent? Agent { get; set; } = null;
         private List<AITool> Funcoes { get; set; } = new List<AITool>();
         private List<AIContextProvider> ContextProviders { get; set; } = new List<AIContextProvider>();
-        private ChatHistoryProvider Historico { get; set; } = null;
+        private ChatHistoryProvider? Historico { get; set; } = null;
 
         [Description("Adiciona uma função ao agente")]
         public void SetFuncao(

@@ -7,6 +7,19 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Agentes\GuardRail\**" />
+    <Compile Remove="Agentes\Prompt\**" />
+    <EmbeddedResource Remove="Agentes\GuardRail\**" />
+    <EmbeddedResource Remove="Agentes\Prompt\**" />
+    <None Remove="Agentes\GuardRail\**" />
+    <None Remove="Agentes\Prompt\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Agentes\Skill\AzureBlobSkills.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Anthropic.Foundry" Version="0.6.0" />
     <PackageReference Include="Azure.AI.OpenAI" Version="2.9.0-beta.1" />
     <PackageReference Include="LLamaSharp" Version="0.27.0" />
@@ -19,10 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Agentes\GuardRail\" />
     <Folder Include="Agentes\Tool\" />
-    <Folder Include="Agentes\Skill\" />
-    <Folder Include="Agentes\Prompt\" />
   </ItemGroup>
 
 </Project>
