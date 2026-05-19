@@ -63,13 +63,13 @@ namespace Service.IA.Agentes.Agente
 
         public async Task<AgentResponse<T>?> RunAsync<T>(string Prompt)
         {
+            if (GuardRailIn != null) if (!GuardRailIn(Prompt)) return null;
+
             if (AgentGuardRailIn != null)
             {
                 var responseGuardRailIn = await AgentGuardRailIn.RunAsync<bool>(Prompt);
                 if (!responseGuardRailIn.Result) return null;
             }
-
-            if (GuardRailIn != null) if (!GuardRailIn(Prompt)) return null;
 
             if (Agent == null) return null;
 
@@ -78,13 +78,13 @@ namespace Service.IA.Agentes.Agente
 
             if (Response != null && Response.Result != null)
             {
+                if (GuardRailOut != null) if (!GuardRailOut(Response.Result?.ToString())) return null;
+
                 if (AgentGuardRailOut != null)
                 {
                     var responseGuardRailOut = await AgentGuardRailOut.RunAsync<bool>(Response.Result.ToString());
                     if (!responseGuardRailOut.Result) return null;
                 }
-
-                if (GuardRailOut != null) if (!GuardRailOut(Response.Result?.ToString())) return null;
             }
 
             return Response;
@@ -92,13 +92,13 @@ namespace Service.IA.Agentes.Agente
 
         public async Task<AgentResponse<T>?> RunAsync<T>(ChatMessage message)
         {
+            if (GuardRailIn != null) if (!GuardRailIn(message.Text)) return null;
+
             if (AgentGuardRailIn != null)
             {
                 var responseGuardRailIn = await AgentGuardRailIn.RunAsync<bool>(message);
                 if (!responseGuardRailIn.Result) return null;
             }
-
-            if (GuardRailIn != null) if (!GuardRailIn(message.Text)) return null;
 
             if (Agent == null) return null;
 
@@ -106,13 +106,13 @@ namespace Service.IA.Agentes.Agente
 
             if (Response != null && Response.Result != null)
             {
+                if (GuardRailOut != null) if (!GuardRailOut(Response.Result?.ToString())) return null;
+
                 if (AgentGuardRailOut != null)
                 {
                     var responseGuardRailOut = await AgentGuardRailOut.RunAsync<bool>(Response.Result.ToString());
                     if (!responseGuardRailOut.Result) return null;
                 }
-
-                if (GuardRailOut != null) if (!GuardRailOut(Response.Result?.ToString())) return null;
             }
 
             return Response;

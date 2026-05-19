@@ -7,11 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Agentes\GuardRail\**" />
     <Compile Remove="Agentes\Prompt\**" />
-    <EmbeddedResource Remove="Agentes\GuardRail\**" />
     <EmbeddedResource Remove="Agentes\Prompt\**" />
-    <None Remove="Agentes\GuardRail\**" />
     <None Remove="Agentes\Prompt\**" />
   </ItemGroup>
 
