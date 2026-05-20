@@ -1,9 +1,7 @@
 ﻿using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
-using OpenAI.Responses;
 using Service.IA.Agentes.Agente.Base;
 using Service.IA.Agentes.Skill;
-using Service.IA.Agentes.Tool;
 
 namespace Service.IA.Agentes.Agente
 {
@@ -16,7 +14,6 @@ namespace Service.IA.Agentes.Agente
         private AgentSession? Session { get; set; } = null;
         private static List<TextSearchProvider.TextSearchResult> Results = new();
 
-
         public async Task<AgentSession?> GetSession()
         {
             if (Agent == null) return null;
@@ -24,8 +21,12 @@ namespace Service.IA.Agentes.Agente
             Session = await Agent.CreateSessionAsync();
             return Session;
         }
-        public void ClearSession() => Session = null;
+        public void LimpaSession() {
+            Session?.SetInMemoryChatHistory(new List<ChatMessage>());
+            Session = null;
+        } 
         public void SetSession(AgentSession session) => Session = session;
+        public void SetSession(List<ChatMessage> msg) => Session?.SetInMemoryChatHistory(msg);
 
         public void SetSkill(SkillModel skill)
         {

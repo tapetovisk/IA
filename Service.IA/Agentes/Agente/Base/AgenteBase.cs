@@ -20,6 +20,7 @@ namespace Service.IA.Agentes.Agente.Base
         public void SetFuncao(
             [Description("A função a ser adicionada ao agente")] Delegate funcao) 
             => Funcoes.Add(AIFunctionFactory.Create(funcao));
+
         [Description("Adiciona uma sub-agente ao agente")]
         public void SetFuncao(
             [Description("O sub-agente a ser adicionado ao agente")] ChatClientAgent Agente) 
@@ -34,6 +35,7 @@ namespace Service.IA.Agentes.Agente.Base
         public void SetHistorico(
             [Description("O provedor de histórico de chat a ser definido para o agente")] ChatHistoryProvider historico) 
             => Historico = historico;
+
         [Description("Define o provedor de histórico de chat do agente como memória")]
         public void SetHistorico() => Historico = new InMemoryChatHistoryProvider();
 
