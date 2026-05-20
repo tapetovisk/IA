@@ -2,4 +2,6 @@
   <Folder Name="/Service/">
     <Project Path="Service.IA/Service.IA.csproj" />
   </Folder>
+  <Project Path="IA.Teste/IA.Teste.Client/IA.Teste.Client.csproj" Id="4dfcd371-faf2-48dc-bb55-2d846f7e0a77" />
+  <Project Path="IA.Teste/IA.Teste/IA.Teste.csproj" Id="3411c99a-b56f-43fd-95fa-b6c4e153fc08" />
 </Solution>
