@@ -2,9 +2,13 @@ using IA.TesteAgente.Client.Pages;
 using IA.TesteAgente.Components;
 using IA.TesteAgente.Components.Account;
 using IA.TesteAgente.Data;
+using IA.TesteAgente.Model;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Service.IA.Enum;
+using Service.IA.Provedor;
+using Service.IA.Provedor.Base;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +21,11 @@ builder.Services.AddRazorComponents()
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
+
+builder.Services.AddKeyedTransient<IProvedorBase, ProvedorAnthopic>(EnumProvedor.Anthopic);
+builder.Services.AddKeyedTransient<IProvedorBase, ProvedorDeepSeek>(EnumProvedor.DeepSeek);
+builder.Services.AddKeyedTransient<IProvedorBase, ProvedorOllama>(EnumProvedor.Ollama);
+
 
 builder.Services.AddDbContextFactory<dbContext>(options =>
                options.UseNpgsql(
