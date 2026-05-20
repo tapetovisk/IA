@@ -13,6 +13,11 @@ namespace Service.IA.Agentes.Agente.Base
 
         [Description("Adiciona uma função ao agente")]
         public void SetFuncao(
+            [Description("A função a ser adicionada ao agente")] AITool funcao)
+            => Funcoes.Add(funcao);
+
+        [Description("Adiciona uma função ao agente")]
+        public void SetFuncao(
             [Description("A função a ser adicionada ao agente")] Delegate funcao) 
             => Funcoes.Add(AIFunctionFactory.Create(funcao));
         [Description("Adiciona uma sub-agente ao agente")]

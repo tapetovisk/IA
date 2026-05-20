@@ -29,7 +29,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Agentes\Tool\" />
+    <Folder Include="Agentes\Prompts\" />
   </ItemGroup>
 
+	<ItemGroup>
+		<EmbeddedResource Include="Prompts\*.md" />
+	</ItemGroup>
+	
 </Project>

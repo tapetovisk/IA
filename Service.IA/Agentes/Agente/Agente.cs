@@ -1,7 +1,9 @@
 ﻿using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
+using OpenAI.Responses;
 using Service.IA.Agentes.Agente.Base;
 using Service.IA.Agentes.Skill;
+using Service.IA.Agentes.Tool;
 
 namespace Service.IA.Agentes.Agente
 {
