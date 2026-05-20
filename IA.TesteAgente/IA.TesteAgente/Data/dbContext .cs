@@ -1,9 +1,22 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using IA.TesteAgente.Model;
+using Microsoft.EntityFrameworkCore;
 
 namespace IA.TesteAgente.Data
 {
     public class dbContext : DbContext
     {
+        public DbSet<AgenteIA> Agente { get; set; }
+        public DbSet<Ferramentas> Ferramentas { get; set; }
+        public DbSet<Messagem> Messagem { get; set; }
+        public DbSet<ModeloLLM> ModeloLLM { get; set; }
+        public DbSet<PerguntasResposta> PerguntasRespostas { get; set; }
+        public DbSet<Provedor> Provedor { get; set; }
+        public DbSet<Rag> Rags { get; set; }
+        public DbSet<Rel_Agente_Ferramentas> Rel_Agente_Ferramentas { get; set; }
+        public DbSet<Rel_Agente_PerguntasResposta> Rel_Agente_PerguntasResposta { get; set; }
+        public DbSet<Rel_Agente_Rag> Rel_Agente_Rag { get; set; }
+        public DbSet<Rel_Agente_SubAgente> Rel_Agente_SubAgente { get; set; }
+
         public dbContext()
         {
         }
@@ -11,9 +24,40 @@ namespace IA.TesteAgente.Data
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
             options.UseNpgsql(
-                "Host=srv754196.hstgr.cloud;Database=vectordb;Username=postgres;Password=postgres123",
+                "Host=srv754196.hstgr.cloud:32798;Database=vetorBD;Username=Admin;Password=Tapeto@96",
                 o => o.UseVector()
             );
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.HasPostgresExtension("vector");
+
+            modelBuilder.Entity<Rag>(entity =>
+            {
+                entity.ToTable("rag");
+                entity.Property(e => e.EmbeddingTexto)
+                .HasColumnName("EmbeddingTexto")
+                .HasColumnType("vector(768)");
+            });
+
+            modelBuilder.Entity<PerguntasResposta>(entity =>
+            {
+                entity.ToTable("perguntasResposta");
+                entity.Property(e => e.EmbeddingPergunta)
+                .HasColumnName("EmbeddingPergunta")
+                .HasColumnType("vector(768)");
+            });
+
+            modelBuilder.Entity<PerguntasResposta>(entity =>
+            {
+                entity.ToTable("perguntasResposta");
+                entity.Property(e => e.EmbeddingRestosta)
+                .HasColumnName("EmbeddingRestosta")
+                .HasColumnType("vector(768)");
+            });
         }
     }
 }

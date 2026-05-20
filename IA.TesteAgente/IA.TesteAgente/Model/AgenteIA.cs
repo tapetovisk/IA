@@ -2,7 +2,7 @@
 
 namespace IA.TesteAgente.Model
 {
-    public class Agente
+    public class AgenteIA
     {
         [Key]
         public string id { get; set; } = Guid.NewGuid().ToString();

@@ -18,6 +18,12 @@ builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
+builder.Services.AddDbContextFactory<dbContext>(options =>
+               options.UseNpgsql(
+                   $"Host=srv754196.hstgr.cloud:32798;Database=vetorBD;Username=Admin;Password=Tapeto@96",
+                   o => o.UseVector())
+               );
+
 builder.Services.AddAuthentication(options =>
     {
         options.DefaultScheme = IdentityConstants.ApplicationScheme;
