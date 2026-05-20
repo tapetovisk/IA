@@ -3,13 +3,116 @@
 
 @using Microsoft.EntityFrameworkCore
 @using IA.TesteAgente.Data
-
+@using IA.TesteAgente.Model
+@using Service.IA.Enum
+@using Service.IA.Util
+@using Service.IA.Provedor.Base
 
 @inject IDbContextFactory<dbContext> DbFactory
+@inject IServiceProvider _serviceProvider
 
+<h3>Cadastro Provedor</h3>
 
-<h3>CadastroProvedor</h3>
+<EditForm Model="Provedor" OnValidSubmit="Cadastro" FormName="CadastroProvedor">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-12">
+        <label class="form-label">
+            Configuração AI:
+            <InputSelect class="form-control" @bind-Value="Provedor.ServicoProvedor" @onchange="CarregaPadrao">
+                @foreach (var tipo in Enum.GetValues(typeof(EnumProvedor)))
+                {
+                    <option value="@tipo">@tipo.ToString()</option>
+                }
+            </InputSelect>
+
+        </label>
+        <ValidationMessage For="@(() => Provedor.ServicoProvedor)" />
+    </div>
+
+    <div class="mb-12">
+        <label class="form-label">
+            Descicao:
+            <InputText class="form-control" @bind-Value="Provedor.Descicao" />
+        </label>
+        <ValidationMessage For="@(() => Provedor.Descicao)" />
+    </div>
+
+    <div class="mb-12">
+        <label class="form-label">
+            Url:
+            <InputText class="form-control" @bind-Value="Provedor.Url" />
+        </label>
+        <ValidationMessage For="@(() => Provedor.Url)" />
+    </div>
+
+    <div class="mb-12">
+        <label class="form-label">
+            Minutos para Timeout:
+            <InputNumber class="form-control" @bind-Value="Provedor.TimeoutMinutes" />
+        </label>
+        <ValidationMessage For="@(() => Provedor.TimeoutMinutes)" />
+    </div>
+
+    <div class="mb-12">
+        <label class="form-label">
+            Chave da API (ApiKey):
+            <InputNumber class="form-control" @bind-Value="Provedor.ApiKey" />
+        </label>
+        <ValidationMessage For="@(() => Provedor.ApiKey)" />
+    </div>
+
+    <div class="mb-12">
+        <label class="form-label">
+            Tag Key da ApiKey:
+            <InputNumber class="form-control" @bind-Value="Provedor.TagKey" />
+        </label>
+        <ValidationMessage For="@(() => Provedor.TagKey)" />
+    </div>
+
+    <div>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+        <button type="button" class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
+    </div>
+</EditForm>
+
+@if (mensagemSucesso)
+{
+    <div class="alert alert-success mt-12">
+        Agente AI cadastrado com sucesso!
+        @resp
+    </div>
+}
+
 
 @code {
+    [SupplyParameterFromForm]
+    public Provedor Provedor { get; set; } = new Provedor();
+    public string resp { get; set; } = "";
 
+    private bool mensagemSucesso = false;
+
+    public void CarregaPadrao()
+    {
+        var EmpresaProvedor = Provedor.ServicoProvedor;
+        var provedor = BuscaProvedor.Criar(EmpresaProvedor.ToString());
+    }
+
+    public void Executar(EnumProvedor provedorEscolhido)
+    {
+        var provedor = _serviceProvider.GetRequiredKeyedService<IProvedorBase>(provedorEscolhido);
+        provedor.Executar();
+    }
+
+    private async Task Cadastro()
+    {
+
+    }
+
+    private void Cancelar()
+    {
+        Provedor = new Provedor();
+        mensagemSucesso = false;
+    }
 }

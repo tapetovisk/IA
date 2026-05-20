@@ -12,6 +12,6 @@ namespace IA.TesteAgente.Model
         public string Url { get; set; } = string.Empty;
         public int TimeoutMinutes { get; set; }
         public string ApiKey { get; set; } = string.Empty;
-        public string TagKey { get; set; }
+        public string TagKey { get; set; } = string.Empty;
     }
 }
