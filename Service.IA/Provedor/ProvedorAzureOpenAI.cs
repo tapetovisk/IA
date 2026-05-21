@@ -9,6 +9,7 @@ namespace Service.IA.Provedor
 {
     public class ProvedorAzureOpenAI : ProvedorBase, IProvedorAzureOpenAI
     {
+        public override string Descricao { get; set; } = "Azure OpenAI";
         public override string TagKey { get; set; } = "api-key";
 
         [Description("Provedor Azure OpenAI")]

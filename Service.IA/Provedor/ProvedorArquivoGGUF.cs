@@ -10,6 +10,8 @@ namespace Service.IA.Provedor
 {
     public class ProvedorArquivoGGUF : ProvedorBase, IProvedorArquivoGGUF
     {
+        public override string Descricao { get; set; } = "Arquivo GGUF";
+
         [Description("Cria um cliente de chat usando um modelo GGUF a partir de um arquivo local.")]
         public override IChatClient SetMedolo(
             [Description("Caminho para o arquivo do modelo GGUF.")] string model)

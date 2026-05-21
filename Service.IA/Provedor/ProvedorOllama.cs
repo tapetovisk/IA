@@ -16,8 +16,8 @@ namespace Service.IA.Provedor
     /// </summary>
     public class ProvedorOllama : ProvedorBase, IProvedorOllama
     {
+        public override string Descricao { get; set; } = "Ollama";
         public override string UrlPadrao { get; set; } = "http://localhost:11434";
-
         public override string TagKey { get; set; } = "Authorization";
 
         [Description("Configura o provedor Ollama com URL e chave de API opcionais. " +

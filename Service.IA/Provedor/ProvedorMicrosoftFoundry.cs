@@ -9,6 +9,7 @@ namespace Service.IA.Provedor
 {
     public class ProvedorMicrosoftFoundry : ProvedorBase, IProvedorMicrosoftFoundry
     {
+        public override string Descricao { get; set; } = "Microsoft Foundry";
 
         [Description("Provedor Microsoft Foundry")]
         public IProvedorBase SetProvedor(

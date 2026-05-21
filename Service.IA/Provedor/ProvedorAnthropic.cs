@@ -4,8 +4,10 @@ using System.ComponentModel;
 
 namespace Service.IA.Provedor
 {
-    public class ProvedorAnthopic : ProvedorBase, IProvedorAnthopic
+    public class ProvedorAnthropic : ProvedorBase, IProvedorAnthropic
     {
+        public override string Descricao { get; set; } = "Anthropic";
+
         [Description("Provedor Azure OpenAI")]
         public IProvedorBase SetProvedor(
            [Description("URL do serviço Azure OpenAI.")] string url,

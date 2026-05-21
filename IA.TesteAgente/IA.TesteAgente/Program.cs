@@ -1,14 +1,10 @@
-using IA.TesteAgente.Client.Pages;
 using IA.TesteAgente.Components;
 using IA.TesteAgente.Components.Account;
 using IA.TesteAgente.Data;
-using IA.TesteAgente.Model;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Service.IA.Enum;
-using Service.IA.Provedor;
-using Service.IA.Provedor.Base;
+using Service.IA;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,20 +14,17 @@ builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents()
     .AddAuthenticationStateSerialization();
 
-builder.Services.AddCascadingAuthenticationState();
-builder.Services.AddScoped<IdentityRedirectManager>();
-builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
-
-builder.Services.AddKeyedTransient<IProvedorBase, ProvedorAnthopic>(EnumProvedor.Anthopic);
-builder.Services.AddKeyedTransient<IProvedorBase, ProvedorDeepSeek>(EnumProvedor.DeepSeek);
-builder.Services.AddKeyedTransient<IProvedorBase, ProvedorOllama>(EnumProvedor.Ollama);
-
+builder.Services.AddAgents();
 
 builder.Services.AddDbContextFactory<dbContext>(options =>
                options.UseNpgsql(
                    $"Host=srv754196.hstgr.cloud:32798;Database=vetorBD;Username=Admin;Password=Tapeto@96",
                    o => o.UseVector())
                );
+
+builder.Services.AddCascadingAuthenticationState();
+builder.Services.AddScoped<IdentityRedirectManager>();
+builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
 
 builder.Services.AddAuthentication(options =>
     {
@@ -63,8 +56,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
     app.UseMigrationsEndPoint();
-}
-else
+} else
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.

@@ -7,12 +7,11 @@ namespace Service.IA.Provedor.Base
     public class ProvedorBase : IProvedorBase
     {
         public OpenAIClient? openAIClient { get; set; } = null;
-
         public HttpClient _httpClient { get; set; } = new HttpClient();
-
         public virtual string UrlPadrao { get; set; } = "";
-
         public virtual string TagKey { get; set; } = "Authorization";
+        public virtual int TimeoutMinutes { get; set; } = 10;
+        public virtual string Descricao { get; set; } = "";
 
         internal string url { get; set; } = "";
 
@@ -28,6 +27,7 @@ namespace Service.IA.Provedor.Base
         {
             this.url = url;
             this.apiKey = apiKey;
+            TimeoutMinutes = timeoutMinutes > 0 ? timeoutMinutes : 10;
 
             if (string.IsNullOrEmpty(url)) url = UrlPadrao;
             SetProvedor();
@@ -35,7 +35,7 @@ namespace Service.IA.Provedor.Base
             if (string.IsNullOrEmpty(url)) return this;
 
             _httpClient = new HttpClient();
-            _httpClient.Timeout = TimeSpan.FromMinutes(timeoutMinutes);
+            _httpClient.Timeout = TimeSpan.FromMinutes(TimeoutMinutes);
             _httpClient.BaseAddress = new Uri(url);
 
             if (string.IsNullOrEmpty(apiKey.Item1) || string.IsNullOrEmpty(apiKey.Item2))

@@ -6,6 +6,7 @@ namespace Service.IA.Provedor
 {
     public class ProvedorGoogle : ProvedorBase, IProvedorGoogle
     {
+        public override string Descricao { get; set; } = "Google";
         public override string UrlPadrao { get; set; } = "https://generativelanguage.googleapis.com/v1beta/openai/";
         public override string TagKey { get; set; } = "Authorization";
     }

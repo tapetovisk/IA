@@ -6,6 +6,7 @@ namespace Service.IA.Provedor
 {
     public class ProvedorGitHubModels : ProvedorBase, IProvedorGitHubModels
     {
+        public override string Descricao { get; set; } = "GitHub Models";
         public override string TagKey { get; set; } = "api-key";
         public override string UrlPadrao { get; set; } = "https://models.inference.ai.azure.com";
 

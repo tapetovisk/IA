@@ -6,6 +6,7 @@ namespace Service.IA.Provedor
 {
     public class ProvedorOpenAI : ProvedorBase, IProvedorOpenAI
     {
+        public override string Descricao { get; set; } = "OpenAI";
         public override string UrlPadrao { get; set; } = "https://api.openai.com/v1";
         public override string TagKey { get; set; } = "Authorization";
 

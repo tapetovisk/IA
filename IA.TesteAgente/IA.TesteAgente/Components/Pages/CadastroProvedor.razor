@@ -1,6 +1,7 @@
 ﻿@page "/cadastroprovedor"
 @rendermode InteractiveServer
 
+
 @using Microsoft.EntityFrameworkCore
 @using IA.TesteAgente.Data
 @using IA.TesteAgente.Model
@@ -18,56 +19,44 @@
     <ValidationSummary />
 
     <div class="mb-12">
-        <label class="form-label">
-            Configuração AI:
-            <InputSelect class="form-control" @bind-Value="Provedor.ServicoProvedor" @onchange="CarregaPadrao">
-                @foreach (var tipo in Enum.GetValues(typeof(EnumProvedor)))
-                {
-                    <option value="@tipo">@tipo.ToString()</option>
-                }
-            </InputSelect>
+        Configuração AI:
+        <InputSelect class="form-control mb-12" @bind-Value="Provedor.ServicoProvedor" @onblur="CarregaPadrao">
+            @foreach (var tipo in Enum.GetValues(typeof(EnumProvedor)))
+            {
+                <option value="@tipo">@tipo.ToString()</option>
+            }
+        </InputSelect>
 
-        </label>
         <ValidationMessage For="@(() => Provedor.ServicoProvedor)" />
     </div>
 
     <div class="mb-12">
-        <label class="form-label">
-            Descicao:
-            <InputText class="form-control" @bind-Value="Provedor.Descicao" />
-        </label>
+        Descicao:
+        <InputText class="form-control" @bind-Value="Provedor.Descicao" />
         <ValidationMessage For="@(() => Provedor.Descicao)" />
     </div>
 
     <div class="mb-12">
-        <label class="form-label">
-            Url:
-            <InputText class="form-control" @bind-Value="Provedor.Url" />
-        </label>
+        Url:
+        <InputText class="form-control" @bind-Value="Provedor.Url" />
         <ValidationMessage For="@(() => Provedor.Url)" />
     </div>
 
     <div class="mb-12">
-        <label class="form-label">
-            Minutos para Timeout:
-            <InputNumber class="form-control" @bind-Value="Provedor.TimeoutMinutes" />
-        </label>
+        Minutos para Timeout:
+        <InputNumber class="form-control" @bind-Value="Provedor.TimeoutMinutes" />
         <ValidationMessage For="@(() => Provedor.TimeoutMinutes)" />
     </div>
 
     <div class="mb-12">
-        <label class="form-label">
-            Chave da API (ApiKey):
-            <InputNumber class="form-control" @bind-Value="Provedor.ApiKey" />
-        </label>
+        Chave da API (ApiKey):
+        <InputText class="form-control" @bind-Value="Provedor.ApiKey" />
         <ValidationMessage For="@(() => Provedor.ApiKey)" />
     </div>
 
     <div class="mb-12">
-        <label class="form-label">
-            Tag Key da ApiKey:
-            <InputNumber class="form-control" @bind-Value="Provedor.TagKey" />
-        </label>
+        Tag Key da ApiKey:
+        <InputText class="form-control" @bind-Value="Provedor.TagKey" />
         <ValidationMessage For="@(() => Provedor.TagKey)" />
     </div>
 
@@ -91,18 +80,20 @@
     public Provedor Provedor { get; set; } = new Provedor();
     public string resp { get; set; } = "";
 
+    protected override void OnInitialized()
+    {
+        CarregaPadrao();
+    }
+
     private bool mensagemSucesso = false;
 
     public void CarregaPadrao()
     {
-        var EmpresaProvedor = Provedor.ServicoProvedor;
-        var provedor = BuscaProvedor.Criar(EmpresaProvedor.ToString());
-    }
-
-    public void Executar(EnumProvedor provedorEscolhido)
-    {
-        var provedor = _serviceProvider.GetRequiredKeyedService<IProvedorBase>(provedorEscolhido);
-        provedor.Executar();
+        var provedor = _serviceProvider.GetRequiredKeyedService<IProvedorBase>(Provedor.ServicoProvedor);
+        Provedor.Url = provedor.UrlPadrao;
+        Provedor.TagKey = provedor.TagKey;
+        Provedor.TimeoutMinutes = provedor.TimeoutMinutes;
+        Provedor.Descicao = provedor.Descricao;
     }
 
     private async Task Cadastro()
