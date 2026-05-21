@@ -3,11 +3,14 @@
     public enum EnumTipoModelo
     {
         Texto = 1,
-        Vision = 2,
+        Visao = 2,
         Embedding = 3,
         Audio = 4,
         Video = 5,
-        Tool = 6,
-        Pensamento = 7
+        Ferramenta = 6,
+        Pensamento = 7,
+        Conclusao = 8,
+        Imagem = 9,
+        Codigo = 10,
     }
 }

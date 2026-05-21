@@ -1,9 +1,13 @@
 ﻿using Azure;
 using Azure.AI.OpenAI;
+using Microsoft.Extensions.AI;
 using OpenAI;
+using Service.IA.Enum;
+using Service.IA.Model;
 using Service.IA.Provedor.Base;
 using Service.IA.Provedor.Interface;
 using System.ComponentModel;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Service.IA.Provedor
 {
@@ -26,5 +30,80 @@ namespace Service.IA.Provedor
 
             return openAIClient;
         }
+
+        public override List<Modelos> ModeloPadrao() => new List<Modelos>()
+        {
+            new Modelos()
+            {
+                Descricao = "Modelo de exemplo para Azure OpenAI",
+                Modelo = "text-embedding-3-large",
+                TipoModelo = new EnumTipoModelo[] { EnumTipoModelo.Embedding },
+                Quantizacao = "float16"
+            },
+            new Modelos()
+            {
+                Descricao = "Modelo de exemplo para Azure OpenAI",
+                Modelo = "text-embedding-3-small",
+                TipoModelo = new EnumTipoModelo[] { EnumTipoModelo.Embedding },
+                Quantizacao = "float16"
+            }, 
+            new Modelos()
+            {
+                Descricao = "Modelo de exemplo para Azure OpenAI",
+                Modelo = "text-embedding-ada-002",
+                TipoModelo = new EnumTipoModelo[] { EnumTipoModelo.Embedding },
+                Quantizacao = "float16"
+            },
+            new Modelos()
+            {
+                Descricao = "Modelo de exemplo para Azure OpenAI",
+                Modelo = "o3-mini",
+                TipoModelo = new EnumTipoModelo[] { EnumTipoModelo.Texto },
+                Quantizacao = "float16"
+            }, new Modelos()
+            {
+                Descricao = "Modelo de exemplo para Azure OpenAI",
+                Modelo = "o1",
+                TipoModelo = new EnumTipoModelo[] { EnumTipoModelo.Texto },
+                Quantizacao = "float16"
+
+            }, new Modelos()
+            {
+                Descricao = "Modelo de exemplo para Azure OpenAI",
+                Modelo = "o4-min",
+                TipoModelo = new EnumTipoModelo[] { EnumTipoModelo.Texto },
+                Quantizacao = "float16"
+            }, new Modelos()
+            {
+                Descricao = "Modelo de exemplo para Azure OpenAI",
+                Modelo = "gpt-5.5",
+                TipoModelo = new EnumTipoModelo[] { EnumTipoModelo.Texto },
+                Quantizacao = "float16"
+            }, new Modelos()
+            {
+                Descricao = "Modelo de exemplo para Azure OpenAI",
+                Modelo = "gpt-5.1",
+                TipoModelo = new EnumTipoModelo[] { EnumTipoModelo.Texto },
+                Quantizacao = "float16"
+            }, new Modelos()
+            {
+                Descricao = "Modelo de exemplo para Azure OpenAI",
+                Modelo = "gpt-4o",
+                TipoModelo = new EnumTipoModelo[] { EnumTipoModelo.Texto },
+                Quantizacao = "float16"
+            }, new Modelos()
+            {
+                Descricao = "Modelo de exemplo para Azure OpenAI",
+                Modelo = "gpt-4o-mini",
+                TipoModelo = new EnumTipoModelo[] { EnumTipoModelo.Texto },
+                Quantizacao = "float16"
+            }, new Modelos()
+            {
+                Descricao = "Modelo de exemplo para Azure OpenAI",
+                Modelo = "gpt-5.1-mini",
+                TipoModelo = new EnumTipoModelo[] { EnumTipoModelo.Texto },
+                Quantizacao = "float16"
+            }
+        };
     }
 }

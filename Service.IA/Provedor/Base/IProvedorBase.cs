@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.AI;
 using OpenAI;
+using Service.IA.Model;
 
 namespace Service.IA.Provedor.Base
 {
@@ -35,5 +36,6 @@ namespace Service.IA.Provedor.Base
         IProvedorBase SetProvedor(string url, Tuple<string, string> apiKey, int timeoutMinutes);
         IProvedorBase SetProvedor(string apiKey);
         IChatClient SetMedolo(string model);
+        List<Modelos> ModeloPadrao();
     }
 }

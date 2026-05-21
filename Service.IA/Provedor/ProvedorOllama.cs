@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.AI;
 using OllamaSharp;
 using OpenAI;
+using Service.IA.Enum;
+using Service.IA.Model;
 using Service.IA.Model.Ollama;
 using Service.IA.Provedor.Base;
 using Service.IA.Provedor.Interface;
@@ -23,7 +25,7 @@ namespace Service.IA.Provedor
         [Description("Configura o provedor Ollama com URL e chave de API opcionais. " +
             "Se url for nulo, usa UrlPadrao. A chave é formatada automaticamente como <c>Bearer {apiKey}</c>.")]
         public IProvedorBase SetProvedor(
-            [Description("URL base do servidor Ollama. Usa UrlPadrao se nulo.")] string url, 
+            [Description("URL base do servidor Ollama. Usa UrlPadrao se nulo.")] string url,
             [Description("Chave de API (pode ser vazia para servidores locais sem autenticação).")] string apiKey)
             => base.SetProvedor(url ?? UrlPadrao, new Tuple<string, string>(TagKey, $"Bearer {apiKey}"), 10);
 
@@ -57,7 +59,7 @@ namespace Service.IA.Provedor
         [Description("Retorna a lista de todos os modelos disponíveis no servidor Ollama via GET /api/models.")]
         public async Task<List<ModelosOllama>> GetListaModelos()
         {
-            var response = await _httpClient.GetAsync("/api/models");
+            var response = await _httpClient.GetAsync("/api/ps");
 
             if (response.IsSuccessStatusCode)
             {
@@ -97,8 +99,7 @@ namespace Service.IA.Provedor
                     return content;
                 }
                 return $"Erro: {response.StatusCode} - {response.ReasonPhrase}";
-            }
-            catch (Exception ex)
+            } catch (Exception ex)
             {
                 return ex.Message;
             }
@@ -118,11 +119,46 @@ namespace Service.IA.Provedor
                     return content;
                 }
                 return $"Erro: {response.StatusCode} - {response.ReasonPhrase}";
-            }
-            catch (Exception ex)
+            } catch (Exception ex)
             {
                 return ex.Message;
             }
+        }
+
+        public override List<Modelos> ModeloPadrao()
+        {
+            var lista = GetListaModelos().Result;
+
+            var modelos = new List<Modelos>();
+
+            foreach (var item in lista)
+            {
+                var detalhes = GetDetalhesModelo(item.model).Result;
+
+                List<EnumTipoModelo> tipos = new List<EnumTipoModelo>();
+                foreach (var capability in detalhes.capabilities)
+                {
+                    switch (capability)
+                    {
+                        case "text": tipos.Add(EnumTipoModelo.Texto); break;
+                        case "completion": tipos.Add(EnumTipoModelo.Conclusao); break;
+                        case "vision": tipos.Add(EnumTipoModelo.Visao); break;
+                        case "audio": tipos.Add(EnumTipoModelo.Audio); break;
+                        case "tools": tipos.Add(EnumTipoModelo.Ferramenta); break;
+                        case "thinking": tipos.Add(EnumTipoModelo.Pensamento); break;
+                        default: break;
+                    }
+                }
+
+                modelos.Add(new Modelos()
+                {
+                    Modelo = item.model,
+                    Quantizacao = item.details.quantization_level,
+                    TipoModelo = tipos.ToArray()
+                });
+            }
+
+            return modelos;
         }
     }
 }

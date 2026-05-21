@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.AI;
 using OpenAI;
+using Service.IA.Model;
 using System.ComponentModel;
 
 namespace Service.IA.Provedor.Base
@@ -72,6 +73,8 @@ namespace Service.IA.Provedor.Base
             return (IChatClient)openAIClient.GetChatClient(model);
         }
 
+
+
         /// <summary>
         /// Inicializa o <see cref="openAIClient"/> com as credenciais e o endpoint configurados.
         /// Usa o construtor simples quando a URL corresponde à <see cref="UrlPadrao"/> (OpenAI oficial);
@@ -92,5 +95,6 @@ namespace Service.IA.Provedor.Base
             return openAIClient;
         }
 
+        public virtual List<Modelos> ModeloPadrao() => new List<Modelos>();
     }
 }

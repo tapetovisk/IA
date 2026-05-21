@@ -1,4 +1,6 @@
-﻿using Service.IA.Provedor.Base;
+﻿using OllamaSharp;
+using Service.IA.Model;
+using Service.IA.Provedor.Base;
 using Service.IA.Provedor.Interface;
 using System.ComponentModel;
 
@@ -15,5 +17,6 @@ namespace Service.IA.Provedor
             [Description("URL do serviço de modelos do GitHub.")] string url,
             [Description("Chave de API do serviço de modelos do GitHub.")] string apiKey)
         => base.SetProvedor(url, new Tuple<string, string>(TagKey, apiKey), 10);
+
     }
 }
