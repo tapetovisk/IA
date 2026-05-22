@@ -1,13 +1,11 @@
 ﻿using Azure;
 using Azure.AI.OpenAI;
-using Microsoft.Extensions.AI;
 using OpenAI;
 using Service.IA.Enum;
 using Service.IA.Model;
 using Service.IA.Provedor.Base;
 using Service.IA.Provedor.Interface;
 using System.ComponentModel;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Service.IA.Provedor
 {
@@ -46,7 +44,7 @@ namespace Service.IA.Provedor
                 Modelo = "text-embedding-3-small",
                 TipoModelo = new EnumTipoModelo[] { EnumTipoModelo.Embedding },
                 Quantizacao = "float16"
-            }, 
+            },
             new Modelos()
             {
                 Descricao = "Modelo de exemplo para Azure OpenAI",

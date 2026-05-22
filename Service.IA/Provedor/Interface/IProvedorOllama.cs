@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.AI;
-using Service.IA.Model.Ollama;
+﻿using Service.IA.Model.Ollama;
 using Service.IA.Provedor.Base;
 
 namespace Service.IA.Provedor.Interface

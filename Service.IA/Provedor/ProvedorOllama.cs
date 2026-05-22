@@ -106,7 +106,8 @@ namespace Service.IA.Provedor
                     return content;
                 }
                 return $"Erro: {response.StatusCode} - {response.ReasonPhrase}";
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 return ex.Message;
             }
@@ -126,7 +127,8 @@ namespace Service.IA.Provedor
                     return content;
                 }
                 return $"Erro: {response.StatusCode} - {response.ReasonPhrase}";
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 return ex.Message;
             }

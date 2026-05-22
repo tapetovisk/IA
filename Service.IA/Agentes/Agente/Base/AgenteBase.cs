@@ -18,22 +18,22 @@ namespace Service.IA.Agentes.Agente.Base
 
         [Description("Adiciona uma função ao agente")]
         public void SetFuncao(
-            [Description("A função a ser adicionada ao agente")] Delegate funcao) 
+            [Description("A função a ser adicionada ao agente")] Delegate funcao)
             => Funcoes.Add(AIFunctionFactory.Create(funcao));
 
         [Description("Adiciona uma sub-agente ao agente")]
         public void SetFuncao(
-            [Description("O sub-agente a ser adicionado ao agente")] ChatClientAgent Agente) 
+            [Description("O sub-agente a ser adicionado ao agente")] ChatClientAgent Agente)
             => Funcoes.Add(Agente.AsAIFunction());
 
         [Description("Adiciona um provedor de contexto ao agente")]
         public void SetContextProvider(
-            [Description("O provedor de contexto a ser adicionado ao agente")] 
+            [Description("O provedor de contexto a ser adicionado ao agente")]
         AIContextProvider contextProvider) => ContextProviders.Add(contextProvider);
-        
+
         [Description("Define o provedor de histórico de chat do agente")]
         public void SetHistorico(
-            [Description("O provedor de histórico de chat a ser definido para o agente")] ChatHistoryProvider historico) 
+            [Description("O provedor de histórico de chat a ser definido para o agente")] ChatHistoryProvider historico)
             => Historico = historico;
 
         [Description("Define o provedor de histórico de chat do agente como memória")]
@@ -42,7 +42,7 @@ namespace Service.IA.Agentes.Agente.Base
         [Description("Cria um agente de chat com as configurações definidas")]
         public async Task<ChatClientAgent> SetAgentAsync(
             [Description("Client a ser utilizado pelo agente")] IChatClient client,
-            [Description("Nome do Agente")] string Nome, 
+            [Description("Nome do Agente")] string Nome,
             [Description("Descrição do Agente")] string Descricao,
             [Description("Modelo do Agente")] string Modelo,
             [Description("Instruções do agente")] string Instrucoes)
@@ -59,9 +59,9 @@ namespace Service.IA.Agentes.Agente.Base
 
         [Description("Cria um agente de chat com as configurações definidas")]
         public async Task<ChatClientAgent> SetAgentAsync(
-            [Description("Client a ser utilizado pelo agente")] IChatClient client, 
-            [Description("Nome do Agente")] string Nome, 
-            [Description("Descrição do Agente")] string Descricao, 
+            [Description("Client a ser utilizado pelo agente")] IChatClient client,
+            [Description("Nome do Agente")] string Nome,
+            [Description("Descrição do Agente")] string Descricao,
             [Description("Class de configuração do agente contendo modelo e instruções")] ChatOptions chat)
         => await SetAgentAsync(client, new ChatClientAgentOptions
         {
@@ -76,8 +76,8 @@ namespace Service.IA.Agentes.Agente.Base
         {
             if (Funcoes.Any()) system?.ChatOptions?.Tools = Funcoes;
 
-            if(Historico != null) system?.ChatHistoryProvider = Historico;
-            if(ContextProviders.Any()) system?.AIContextProviders = ContextProviders;
+            if (Historico != null) system?.ChatHistoryProvider = Historico;
+            if (ContextProviders.Any()) system?.AIContextProviders = ContextProviders;
 
             var agent = client.AsAIAgent(system);
             return agent;

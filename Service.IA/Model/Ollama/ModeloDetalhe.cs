@@ -1,18 +1,16 @@
-﻿using OllamaSharp.Models;
-
-namespace Service.IA.Model.Ollama
+﻿namespace Service.IA.Model.Ollama
 {
     public class ModeloDetalhe
     {
-            public string license { get; set; }
-            public string modelfile { get; set; }
-            public string parameters { get; set; }
-            public string template { get; set; }
-            public MDetails details { get; set; }
-            public Model_Info model_info { get; set; }
-            public Tensor[] tensors { get; set; }
-            public string[] capabilities { get; set; }
-            public DateTime modified_at { get; set; }  
+        public string license { get; set; }
+        public string modelfile { get; set; }
+        public string parameters { get; set; }
+        public string template { get; set; }
+        public MDetails details { get; set; }
+        public Model_Info model_info { get; set; }
+        public Tensor[] tensors { get; set; }
+        public string[] capabilities { get; set; }
+        public DateTime modified_at { get; set; }
     }
 
     public class MDetails
