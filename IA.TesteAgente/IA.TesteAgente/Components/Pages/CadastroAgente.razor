@@ -4,9 +4,7 @@
 @using Microsoft.EntityFrameworkCore
 @using IA.TesteAgente.Data
 @using IA.TesteAgente.Model
-@using Service.IA.Enum
 @using IA.TesteAgente.Service
-@using Service.IA.Provedor.Base
 
 @inject IDbContextFactory<dbContext> DbFactory
 @inject IServiceProvider _serviceProvider
@@ -245,7 +243,7 @@
         var ModelProvedor = ListProvedor.Where(a => a.id == AgenteMelhora.idProvedor).FirstOrDefault();
 
         using var context = DbFactory.CreateDbContext();
-        var provedor = _serviceProvider.GetRequiredKeyedService<Service.IA.Provedor.Base.IProvedorBase>(ModelProvedor.ServicoProvedor);
+        var provedor = _serviceProvider.GetRequiredKeyedService<IProvedorBase>(ModelProvedor.ServicoProvedor);
         
         var Ag = new GeraAgente(context);
 
