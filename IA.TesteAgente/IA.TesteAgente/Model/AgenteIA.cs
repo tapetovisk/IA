@@ -17,5 +17,6 @@ namespace IA.TesteAgente.Model
         public string idAgenteGuardRailSaida { get; set; } = string.Empty;
         public bool Memoria { get; set; }
         public string TipoSaida { get; set; } = typeof(string).Name;
+        public string Referencia { get; set; } = string.Empty;
     }
 }
