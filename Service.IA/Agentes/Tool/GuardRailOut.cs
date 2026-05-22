@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Text.RegularExpressions;
 
-namespace Service.IA.Agentes.GuardRail
+namespace Service.IA.Agentes.Tool
 {
     public class GuardRailOut
     {
@@ -17,7 +17,7 @@ namespace Service.IA.Agentes.GuardRail
 
         [Description("Valida se a saída do modelo contém dados sensíveis, como dados bancários, de login, pessoais," +
             " financeiros ou de redes. Retorna false se qualquer tipo de dado sensível for encontrado.")]
-        public bool ValidateTudo([Description("Saída do modelo a ser validada")] string modelOutput)
+        public bool ValidateTudoOut([Description("Saída do modelo a ser validada")] string modelOutput)
         {
             if (!ValidateDadosBanco(modelOutput)) return false;
             if (!ValidateDadosLogin(modelOutput)) return false;

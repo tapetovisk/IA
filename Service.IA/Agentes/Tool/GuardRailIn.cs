@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace Service.IA.Agentes.GuardRail
+namespace Service.IA.Agentes.Tool
 {
     public class GuardRailIn
     {

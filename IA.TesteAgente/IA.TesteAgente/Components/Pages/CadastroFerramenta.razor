@@ -1,0 +1,328 @@
+﻿@page "/cadastroferramenta"
+@rendermode InteractiveServer
+
+@using Microsoft.EntityFrameworkCore
+@using IA.TesteAgente.Data
+@using IA.TesteAgente.Model
+@using Service.IA.Enum
+
+@inject IDbContextFactory<dbContext> DbFactory
+
+<h3>Cadastro Ferramenta</h3>
+
+<div class="row">
+    <div class="col-6">
+
+        <table id="virtualized-table" class="col-12">
+            <thead style="position: sticky; top: 0; background-color: silver">
+                <tr>
+                    <th class="col-4">Descrição</th>
+                    <th class="col-3">Nome</th>
+                    <th class="col-2">Tipo Ferramenta</th>
+                    <th class="col-3"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <Virtualize Items="ListTool" ItemSize="10" SpacerElement="tr" >
+                    <tr @key="context.id" style="height: 30px;" id="row-@context.id">
+                        <td class="col-4">@context.Command</td>
+                        <td class="col-3">@context.Nome</td>
+                        <td class="col-2">@context.TipoFerramenta</td>
+                        <td class="col-3">
+                            <button @onclick="@(() => EditaModelo(context.id))">Editar</button> &ensp;&ensp;
+                            <button @onclick="@(() => RemoveModelos(context.id))">Remover</button>
+                        </td>
+                    </tr>
+                </Virtualize>
+            </tbody>
+        </table>
+
+    </div>
+
+    <div class="col-6">
+
+        <EditForm Model="Modelo" OnValidSubmit="Cadastro" FormName="CadastroFerramenta">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="mb-12">
+                Tipo Ferramenta:
+                <InputSelect class="form-control mb-12" @bind-Value="Modelo.TipoFerramenta">
+                    @foreach (var tipo in Enum.GetValues<EnumTipoFerramenta>())
+                    {
+                        <option value="@tipo">@tipo.ToString()</option>
+                    }
+                </InputSelect>
+
+                <ValidationMessage For="@(() => Modelo.TipoFerramenta)" />
+            </div>
+
+            <div class="mb-12">
+                Nome:
+                <InputText class="form-control" @bind-Value="Modelo.Nome" />
+                <ValidationMessage For="@(() => Modelo.Nome)" />
+            </div>
+
+            <div class="mb-12">
+                Command:
+                <InputText class="form-control" @bind-Value="Modelo.Command" />
+                <ValidationMessage For="@(() => Modelo.Command)" />
+            </div>
+
+            <div class="mb-12">
+                Arguments:
+                <InputText class="form-control" @bind-Value="Modelo.JsonArguments" />
+                <ValidationMessage For="@(() => Modelo.JsonArguments)" />
+            </div>
+
+            <div class="mb-12">
+                Url:
+                <InputText class="form-control" @bind-Value="Modelo.Url" />
+                <ValidationMessage For="@(() => Modelo.Url)" />
+            </div>
+
+            <div class="mb-12">
+                Name Space:
+                <InputText class="form-control" @bind-Value="Modelo.NameSpace" />
+                <ValidationMessage For="@(() => Modelo.NameSpace)" />
+            </div>
+
+            <div>
+                <button type="submit" class="btn btn-primary">Salvar</button>
+                <button type="button" class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
+            </div>
+        </EditForm>
+
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromForm]
+    public Ferramentas Modelo { get; set; } = new();
+    public List<Ferramentas> ListTool { get; set; } = new();
+    public bool Novo { get; set; } = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = await DbFactory.CreateDbContextAsync();
+        ListTool = await context.Ferramentas.ToListAsync();
+        await BuscaFerramentaSistema();
+    }
+
+    private async Task Cadastro()
+    {
+        using var context = await DbFactory.CreateDbContextAsync();
+
+        if (Novo)
+        {
+            context.Ferramentas.Add(Modelo);
+        }
+        else
+        {
+            context.Ferramentas.Update(Modelo);
+        }
+        await context.SaveChangesAsync();
+        ListTool = await context.Ferramentas.ToListAsync();
+
+        Modelo = new();
+        Novo = true;
+    }
+
+    private void Cancelar()
+    {
+        Modelo = new Ferramentas();
+        Novo = true;
+    }
+
+    private void EditaModelo(string id)
+    {
+        Modelo = ListTool.First(a => a.id == id);
+        Novo = false;
+    }
+
+    private async Task RemoveModelos(string id)
+    {
+        using var context = await DbFactory.CreateDbContextAsync();
+        var modeloRemove = await context.Ferramentas.FirstAsync(a => a.id == id);
+        context.Ferramentas.Remove(modeloRemove);
+        await context.SaveChangesAsync();
+        ListTool = await context.Ferramentas.ToListAsync();
+    }
+
+    private async Task BuscaFerramentaSistema()
+    {
+        if (ListTool.Any()) return;
+
+        var ToolSistema = new List<Ferramentas>
+        {
+            new Ferramentas
+            {
+                TipoFerramenta = EnumTipoFerramenta.Metodo,
+                Nome = "Busca o conteúdo de um arquivo de prompt para um agente específico.",
+                Command = "BuscaPromptAsync",
+                JsonArguments = "",
+                Url = "",
+                NameSpace = "Service.IA.Agentes.Tool"
+            },
+            new Ferramentas
+            {
+                TipoFerramenta = EnumTipoFerramenta.Metodo,
+                Nome = "Grava o conteúdo de um arquivo de prompt para um agente específico.",
+                Command = "GravarPromptAsync",
+                JsonArguments = "",
+                Url = "",
+                NameSpace = "Service.IA.Agentes.Tool"
+            },
+            new Ferramentas
+            {
+                TipoFerramenta = EnumTipoFerramenta.Metodo,
+                Nome = "Apaga o arquivo de prompt para um agente específico.",
+                Command = "DeletarPromptAsync",
+                JsonArguments = "",
+                Url = "",
+                NameSpace = "Service.IA.Agentes.Tool"
+            },
+            new Ferramentas
+            {
+                TipoFerramenta = EnumTipoFerramenta.Metodo,
+                Nome = "Busca o conteúdo de um arquivo de recurso incorporado.",
+                Command = "BuscaArquivoAsync",
+                JsonArguments = "",
+                Url = "",
+                NameSpace = "Service.IA.Agentes.Tool"
+            },
+            new Ferramentas
+            {
+                TipoFerramenta = EnumTipoFerramenta.Metodo,
+                Nome = "Grava o conteúdo de um arquivo em um caminho específico.",
+                Command = "GravarArquivoAsync",
+                JsonArguments = "",
+                Url = "",
+                NameSpace = "Service.IA.Agentes.Tool"
+            },
+            new Ferramentas
+            {
+                TipoFerramenta = EnumTipoFerramenta.Metodo,
+                Nome = "Apaga um arquivo em um caminho específico.",
+                Command = "DeletarArquivoAsync",
+                JsonArguments = "",
+                Url = "",
+                NameSpace = "Service.IA.Agentes.Tool"
+            },
+            new Ferramentas
+            {
+                TipoFerramenta = EnumTipoFerramenta.GuardRail,
+                Nome = "Valida todas as regras de guardrail injeção de SQL, injeção de código, injeção de comandos e injeção de binários.",
+                Command = "ValidaTudo",
+                JsonArguments = "",
+                Url = "",
+                NameSpace = "Service.IA.Agentes.Tool"
+            },
+            new Ferramentas
+            {
+                TipoFerramenta = EnumTipoFerramenta.GuardRail,
+                Nome = "Valida todas as regras de guardrail injeção de prompt.",
+                Command = "ValidaTextoBloqueado",
+                JsonArguments = "",
+                Url = "",
+                NameSpace = "Service.IA.Agentes.Tool"
+            },
+            new Ferramentas
+            {
+                TipoFerramenta = EnumTipoFerramenta.GuardRail,
+                Nome = "Valida todas as regras de guardrail injeção de SQL.",
+                Command = "ValidaInjecaoSQL",
+                JsonArguments = "",
+                Url = "",
+                NameSpace = "Service.IA.Agentes.Tool"
+            },
+            new Ferramentas
+            {
+                TipoFerramenta = EnumTipoFerramenta.GuardRail,
+                Nome = "Valida todas as regras de guardrail injeção de código.",
+                Command = "ValidaInjecaoCodigo",
+                JsonArguments = "",
+                Url = "",
+                NameSpace = "Service.IA.Agentes.Tool"
+            },
+            new Ferramentas
+            {
+                TipoFerramenta = EnumTipoFerramenta.GuardRail,
+                Nome = "Valida todas as regras de guardrail injeção de comando.",
+                Command = "ValidaInjecaoComando",
+                JsonArguments = "",
+                Url = "",
+                NameSpace = "Service.IA.Agentes.Tool"
+            },
+            new Ferramentas
+            {
+                TipoFerramenta = EnumTipoFerramenta.GuardRail,
+                Nome = "Valida todas as regras de guardrail injeção de comando em binários.",
+                Command = "ValidaInjecaoBinarios",
+                JsonArguments = "",
+                Url = "",
+                NameSpace = "Service.IA.Agentes.Tool"
+            },
+            new Ferramentas
+            {
+                TipoFerramenta = EnumTipoFerramenta.GuardRail,
+                Nome = "Valida todas as regras de guardrail contém dados sensíveis, como dados bancários, de login, pessoais, financeiros ou de redes.",
+                Command = "ValidateTudoOut",
+                JsonArguments = "",
+                Url = "",
+                NameSpace = "Service.IA.Agentes.Tool"
+            },
+            new Ferramentas
+            {
+                TipoFerramenta = EnumTipoFerramenta.GuardRail,
+                Nome = "Valida se contém dados de conexão de banco de dados.",
+                Command = "ValidateDadosBanco",
+                JsonArguments = "",
+                Url = "",
+                NameSpace = "Service.IA.Agentes.Tool"
+            },
+            new Ferramentas
+            {
+                TipoFerramenta = EnumTipoFerramenta.GuardRail,
+                Nome = "Valida se contém dados de login.",
+                Command = "ValidateDadosLogin",
+                JsonArguments = "",
+                Url = "",
+                NameSpace = "Service.IA.Agentes.Tool"
+            },
+            new Ferramentas
+            {
+                TipoFerramenta = EnumTipoFerramenta.GuardRail,
+                Nome = "Valida se contém dados pessoais.",
+                Command = "ValidateDadosPessoais",
+                JsonArguments = "",
+                Url = "",
+                NameSpace = "Service.IA.Agentes.Tool"
+            },
+            new Ferramentas
+            {
+                TipoFerramenta = EnumTipoFerramenta.GuardRail,
+                Nome = "Valida se contém dados financeiros.",
+                Command = "ValidateDadosFinanceiros",
+                JsonArguments = "",
+                Url = "",
+                NameSpace = "Service.IA.Agentes.Tool"
+            },
+            new Ferramentas
+            {
+                TipoFerramenta = EnumTipoFerramenta.GuardRail,
+                Nome = "Valida se contém dados de redes.",
+                Command = "ValidateDadosRedes",
+                JsonArguments = "",
+                Url = "",
+                NameSpace = "Service.IA.Agentes.Tool"
+            }
+        };
+
+        foreach (var item in ToolSistema)
+        {
+            Modelo = item;
+            await Cadastro();
+        }
+    }
+}

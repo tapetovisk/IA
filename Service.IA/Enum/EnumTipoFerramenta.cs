@@ -4,6 +4,7 @@
     {
         Metodo = 1,
         MCPLocal = 2,
-        MCPHttp = 3
+        MCPHttp = 3,
+        GuardRail = 4
     }
 }
