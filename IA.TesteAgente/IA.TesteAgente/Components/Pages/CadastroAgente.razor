@@ -3,12 +3,109 @@
 
 @using Microsoft.EntityFrameworkCore
 @using IA.TesteAgente.Data
-
+@using IA.TesteAgente.Model
 
 @inject IDbContextFactory<dbContext> DbFactory
 
-<h3>CadastroAgente</h3>
+<h3>Cadastro Agente</h3>
+
+<div class="row">
+    <div class="col-6">
+
+
+
+    </div>
+
+    <div class="col-6">
+
+        <EditForm Model="Agente" OnValidSubmit="Cadastro" FormName="CadastroAgente">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="mb-12">
+                Provedor:
+                <InputSelect class="form-control mb-12" @bind-Value="Agente.idProvedor" @onchange="@((a) => SetProvedor(a))">
+                    <option value="">Selecione um provedor</option>
+                    
+                    @foreach (var provedor in ListProvedor)
+                    {
+                        <option value="@provedor.id">@Enum.GetName(provedor.ServicoProvedor) - @provedor.Descicao</option>
+                    }
+                </InputSelect>
+
+                <ValidationMessage For="@(() => Agente.idProvedor)" />
+            </div>
+
+            <div class="mb-12">
+                Modelo:
+                <InputSelect class="form-control mb-12" @bind-Value="Agente.idModeloLLM" >
+                    <option value="">Selecione um Modelo</option>
+
+                    @foreach (var modelo in ListModelo)
+                    {
+                        <option value="@modelo.id">@modelo.Modelo</option>
+                    }
+                </InputSelect>
+
+                <ValidationMessage For="@(() => Agente.idProvedor)" />
+            </div>
+
+
+
+            <div>
+                <button type="submit" class="btn btn-primary">Salvar</button>
+                <button type="button" class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
+            </div>
+        </EditForm>
+
+    </div>
+</div>
 
 @code {
+    [SupplyParameterFromForm]
+    public AgenteIA Agente { get; set; } = new();
+    public List<AgenteIA> ListAgente { get; set; } = new();
+    public List<Provedor> ListProvedor { get; set; } = new();
+    public List<ModeloLLM> ListModelo { get; set; } = new();
+    public List<Ferramentas> ListFerramentas { get; set; } = new();
+    public bool Novo { get; set; } = true;
 
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = await DbFactory.CreateDbContextAsync();
+        ListAgente = await context.AgenteIA.ToListAsync();
+        ListProvedor = await context.Provedor.ToListAsync();
+    }
+
+    private async Task Cadastro(EditContext args)
+    {
+        using var context = await DbFactory.CreateDbContextAsync();
+
+        if (Novo)
+        {
+            context.AgenteIA.Add(Agente);
+        }
+        else
+        {
+            context.AgenteIA.Update(Agente);
+        }
+        await context.SaveChangesAsync();
+        ListAgente = await context.AgenteIA.ToListAsync();
+
+        Agente = new();
+        Novo = true;
+    }
+
+    public void SetProvedor(ChangeEventArgs a)
+    {
+        Agente.idProvedor = a.Value.ToString();
+        using var context = DbFactory.CreateDbContext();
+        ListModelo = context.ModeloLLM.Where(a => a.IdProvedor == Agente.idProvedor).ToList();
+    }
+
+    private void Cancelar(MouseEventArgs args)
+    {
+        Agente = new AgenteIA();
+        Novo = true;
+    }
 }

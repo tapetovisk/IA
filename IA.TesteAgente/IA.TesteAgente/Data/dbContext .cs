@@ -5,7 +5,7 @@ namespace IA.TesteAgente.Data
 {
     public class dbContext : DbContext
     {
-        public DbSet<AgenteIA> Agente { get; set; }
+        public DbSet<AgenteIA> AgenteIA { get; set; }
         public DbSet<Ferramentas> Ferramentas { get; set; }
         public DbSet<Messagem> Messagem { get; set; }
         public DbSet<ModeloLLM> ModeloLLM { get; set; }
