@@ -1,17 +1,15 @@
-﻿using OllamaSharp.Models;
-
-namespace Service.IA.Model.Ollama
+﻿namespace Service.IA.Model.Ollama
 {
     public class ModelosOllama
     {
         public string name { get; set; }
         public string model { get; set; }
-        public DateTime modified_at { get; set; }
         public int size { get; set; }
         public string digest { get; set; }
         public Details details { get; set; }
-        public string remote_model { get; set; }
-        public string remote_host { get; set; }
+        public DateTime expires_at { get; set; }
+        public int size_vram { get; set; }
+        public int context_length { get; set; }
     }
 
     public class Details

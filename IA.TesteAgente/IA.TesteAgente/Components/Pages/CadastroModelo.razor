@@ -3,11 +3,145 @@
 
 @using Microsoft.EntityFrameworkCore
 @using IA.TesteAgente.Data
+@using IA.TesteAgente.Model
+@using Service.IA.Provedor.Base
 
 @inject IDbContextFactory<dbContext> DbFactory
+@inject IServiceProvider _serviceProvider
 
-<h3>CadastroModelo</h3>
+<h3>Cadastro Modelo</h3>
+
+<div class="row">
+    <div class="col-6">
+
+        <div class="row">
+
+            <div class="col-8">
+                Provedor:
+                <InputSelect class="form-control mb-12" @bind-Value="@idProvedor" @onchange="@((a) => SetIdProvedor(a))">
+                    <option value="">Selecione um provedor</option>
+                    @foreach (var tipo in LstProvedor)
+                    {
+                        <option value="@tipo.id">@tipo.Descicao</option>
+                    }
+                </InputSelect>
+            </div>
+            <div class="col-4">
+                <button @onclick="BuscaModeloPadrao" >Buscar Modelo</button>
+            </div>
+        </div>
+
+        <div class="row">
+            <table id="virtualized-table" class="col-12">
+                <thead style="position: sticky; top: 0; background-color: silver">
+                    <tr>
+                        <th class="col-4">Descrição</th>
+                        <th class="col-4">Provedor</th>
+                        <th class="col-4"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <Virtualize Items="LstModelo" ItemSize="10" SpacerElement="tr">
+                        <tr @key="context.id" style="height: 30px;" id="row-@context.id">
+                            <td class="col-4">@context.Modelo</td>
+                            <td class="col-4">@context.Descricao</td>
+                            <td class="col-4"> <button >Editar</button>  </td>
+                        </tr>
+                    </Virtualize>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <div class="col-6">
+
+        <EditForm Model="Modelo" OnValidSubmit="Cadastro" FormName="CadastroProvedor">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div>
+                <button type="submit" class="btn btn-primary">Salvar</button>
+                <button type="button" class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
+            </div>
+        </EditForm>
+
+    </div>
+</div>
 
 @code {
+    [SupplyParameterFromForm]
+    public ModeloLLM Modelo { get; set; } = new();
+    public List<ModeloLLM> LstModelo { get; set; } = new();
+    public List<Provedor> LstProvedor { get; set; } = new();
+    public bool Novo { get; set; } = true;
+    public string idProvedor { get; set; }
 
+    protected override void OnInitialized()
+    {
+        BuscaProvedor();
+        BuscaModelo();
+    }
+
+    public void BuscaProvedor()
+    {
+        using var context = DbFactory.CreateDbContext();
+        LstProvedor = context.Provedor.ToList();
+    }
+    public void BuscaModelo()
+    {
+        using var context = DbFactory.CreateDbContext();
+        LstModelo = context.ModeloLLM.ToList();
+    }
+
+    void SetIdProvedor(ChangeEventArgs a)
+    {
+        idProvedor = a.Value.ToString();
+    }
+
+    public void BuscaModeloPadrao()
+    {
+        var Model = LstProvedor.FirstOrDefault(f => f.id == idProvedor);
+
+        var provedor = _serviceProvider.GetRequiredKeyedService<IProvedorBase>(Model.ServicoProvedor);
+
+        provedor.UrlPadrao = Model.Url;
+        provedor.TagKey = Model.TagKey;
+        provedor.SetProvedor(Model.Url, new Tuple<string, string>(Model.TagKey, Model.ApiKey), Model.TimeoutMinutes);
+        Novo = true;
+
+        foreach (var item in provedor.ModeloPadrao())
+        {
+            Modelo = new (){
+                Modelo = item.Modelo,
+                Descricao = item.Descricao,
+                IdProvedor = idProvedor,
+                TipoModelo = item.TipoModelo,
+                Quantizacao = item.Quantizacao,
+                ServicoProvedor = Model.ServicoProvedor                
+            };
+
+            Cadastro();
+        }
+    }
+
+    void Cadastro()
+    {
+        using var context = DbFactory.CreateDbContext();
+        if (Novo)
+        {
+            context.ModeloLLM.Add(Modelo);
+        } else
+        {
+            context.ModeloLLM.Update(Modelo);
+        }
+        context.SaveChanges();
+        BuscaModelo();
+    }
+
+    private void Cancelar()
+    {
+        Modelo = new();
+        Novo = true;
+    }
 }

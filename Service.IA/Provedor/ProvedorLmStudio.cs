@@ -5,6 +5,7 @@ namespace Service.IA.Provedor
 {
     public class ProvedorLmStudio : ProvedorBase, IProvedorLmStudio
     {
+        public override string Descricao { get; set; } = "LM Studio";
         public override string UrlPadrao { get; set; } = "http://localhost:1234/v1";
         public override string TagKey { get; set; } = "Authorization";
     }

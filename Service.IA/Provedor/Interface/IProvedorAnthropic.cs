@@ -2,7 +2,7 @@
 
 namespace Service.IA.Provedor.Interface
 {
-    public interface IProvedorAnthopic : IProvedorBase
+    public interface IProvedorAnthropic : IProvedorBase
     {
         IProvedorBase SetProvedor(string url, string apiKey);
     }

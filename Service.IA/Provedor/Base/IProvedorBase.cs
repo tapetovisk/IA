@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.AI;
 using OpenAI;
+using Service.IA.Model;
 
 namespace Service.IA.Provedor.Base
 {
@@ -29,9 +30,12 @@ namespace Service.IA.Provedor.Base
         /// Padrão: "Authorization" (envia como Bearer token). Altere para o nome correto do header quando o provedor exigir outro formato.
         /// </summary>
         string TagKey { get; set; }
+        int TimeoutMinutes { get; set; }
+        string Descricao { get; set; }
 
         IProvedorBase SetProvedor(string url, Tuple<string, string> apiKey, int timeoutMinutes);
         IProvedorBase SetProvedor(string apiKey);
         IChatClient SetMedolo(string model);
+        List<Modelos> ModeloPadrao();
     }
 }

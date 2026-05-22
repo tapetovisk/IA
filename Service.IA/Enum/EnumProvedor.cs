@@ -2,7 +2,7 @@
 {
     public enum EnumProvedor
     {
-        Anthopic = 0,
+        Anthropic = 0,
         ArquivoGGUF = 1,
         AzureOpenAI = 2,
         DeepSeek = 3,

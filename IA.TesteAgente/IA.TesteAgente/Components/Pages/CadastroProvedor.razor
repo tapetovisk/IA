@@ -5,7 +5,6 @@
 @using IA.TesteAgente.Data
 @using IA.TesteAgente.Model
 @using Service.IA.Enum
-@using Service.IA.Util
 @using Service.IA.Provedor.Base
 
 @inject IDbContextFactory<dbContext> DbFactory
@@ -13,105 +12,156 @@
 
 <h3>Cadastro Provedor</h3>
 
-<EditForm Model="Provedor" OnValidSubmit="Cadastro" FormName="CadastroProvedor">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
+<div class="row">
 
-    <div class="mb-12">
-        <label class="form-label">
-            Configuração AI:
-            <InputSelect class="form-control" @bind-Value="Provedor.ServicoProvedor" @onchange="CarregaPadrao">
-                @foreach (var tipo in Enum.GetValues(typeof(EnumProvedor)))
-                {
-                    <option value="@tipo">@tipo.ToString()</option>
-                }
-            </InputSelect>
+    <div class="col-6">
 
-        </label>
-        <ValidationMessage For="@(() => Provedor.ServicoProvedor)" />
+        <table id="virtualized-table" class="col-12">
+            <thead style="position: sticky; top: 0; background-color: silver">
+                <tr>
+                    <th class="col-4">Descrição</th>
+                    <th class="col-4">Provedor</th>
+                    <th class="col-4"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <Virtualize Items="LstProvedor" ItemSize="10" SpacerElement="tr">
+                    <tr @key="context.id" style="height: 30px;" id="row-@context.id">
+                        <td class="col-4">@context.Descicao</td>
+                        <td class="col-4">@context.ServicoProvedor</td>
+                        <td class="col-4"> <button @onclick="@(() => BuscaProvedor(context.id))">Editar</button>  </td>
+                    </tr>
+                </Virtualize>
+            </tbody>
+        </table>
+
     </div>
 
-    <div class="mb-12">
-        <label class="form-label">
-            Descicao:
-            <InputText class="form-control" @bind-Value="Provedor.Descicao" />
-        </label>
-        <ValidationMessage For="@(() => Provedor.Descicao)" />
-    </div>
+    <div class="col-6">
+        <EditForm Model="Provedor" OnValidSubmit="Cadastro" FormName="CadastroProvedor">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
 
-    <div class="mb-12">
-        <label class="form-label">
-            Url:
-            <InputText class="form-control" @bind-Value="Provedor.Url" />
-        </label>
-        <ValidationMessage For="@(() => Provedor.Url)" />
-    </div>
+            <div class="mb-12">
+                Configuração AI:
+                <InputSelect class="form-control mb-12" @bind-Value="Provedor.ServicoProvedor" @onblur="CarregaPadrao">
+                    @foreach (var tipo in Enum.GetValues(typeof(EnumProvedor)))
+                    {
+                        <option value="@tipo">@tipo.ToString()</option>
+                    }
+                </InputSelect>
 
-    <div class="mb-12">
-        <label class="form-label">
-            Minutos para Timeout:
-            <InputNumber class="form-control" @bind-Value="Provedor.TimeoutMinutes" />
-        </label>
-        <ValidationMessage For="@(() => Provedor.TimeoutMinutes)" />
-    </div>
+                <ValidationMessage For="@(() => Provedor.ServicoProvedor)" />
+            </div>
 
-    <div class="mb-12">
-        <label class="form-label">
-            Chave da API (ApiKey):
-            <InputNumber class="form-control" @bind-Value="Provedor.ApiKey" />
-        </label>
-        <ValidationMessage For="@(() => Provedor.ApiKey)" />
-    </div>
+            <div class="mb-12">
+                Descicao:
+                <InputText class="form-control" @bind-Value="Provedor.Descicao" />
+                <ValidationMessage For="@(() => Provedor.Descicao)" />
+            </div>
 
-    <div class="mb-12">
-        <label class="form-label">
-            Tag Key da ApiKey:
-            <InputNumber class="form-control" @bind-Value="Provedor.TagKey" />
-        </label>
-        <ValidationMessage For="@(() => Provedor.TagKey)" />
-    </div>
+            <div class="mb-12">
+                Url:
+                <InputText class="form-control" @bind-Value="Provedor.Url" />
+                <ValidationMessage For="@(() => Provedor.Url)" />
+            </div>
 
-    <div>
-        <button type="submit" class="btn btn-primary">Salvar</button>
-        <button type="button" class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
-    </div>
-</EditForm>
+            <div class="mb-12">
+                Minutos para Timeout:
+                <InputNumber class="form-control" @bind-Value="Provedor.TimeoutMinutes" />
+                <ValidationMessage For="@(() => Provedor.TimeoutMinutes)" />
+            </div>
 
-@if (mensagemSucesso)
-{
-    <div class="alert alert-success mt-12">
-        Agente AI cadastrado com sucesso!
-        @resp
-    </div>
-}
+            <div class="mb-12">
+                Chave da API (ApiKey):
+                <InputText class="form-control" @bind-Value="Provedor.ApiKey" />
+                <ValidationMessage For="@(() => Provedor.ApiKey)" />
+            </div>
 
+            <div class="mb-12">
+                Tag Key da ApiKey:
+                <InputText class="form-control" @bind-Value="Provedor.TagKey" />
+                <ValidationMessage For="@(() => Provedor.TagKey)" />
+            </div>
+
+            <div>
+                <button type="submit" class="btn btn-primary">Salvar</button>
+                <button type="button" class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
+            </div>
+        </EditForm>
+
+        @if (mensagemSucesso)
+        {
+            <div class="alert alert-success mt-12">
+                Agente AI cadastrado com sucesso!
+                @resp
+            </div>
+        }
+
+    </div>
+</div>
 
 @code {
     [SupplyParameterFromForm]
     public Provedor Provedor { get; set; } = new Provedor();
+    public List<Provedor> LstProvedor { get; set; } = new ();
     public string resp { get; set; } = "";
+    public bool Novo { get; set; } = true;
+
+    protected override void OnInitialized()
+    {
+        BuscaProvedor();
+        CarregaPadrao();
+    }
+
+    public void BuscaProvedor()
+    {
+        using var context = DbFactory.CreateDbContext();
+        LstProvedor = context.Provedor.ToList();
+    }
+
+    public void BuscaProvedor(string id)
+    {
+        Provedor = LstProvedor.First(a => a.id == id);
+        Novo = false;
+    }
 
     private bool mensagemSucesso = false;
 
     public void CarregaPadrao()
     {
-        var EmpresaProvedor = Provedor.ServicoProvedor;
-        var provedor = BuscaProvedor.Criar(EmpresaProvedor.ToString());
-    }
-
-    public void Executar(EnumProvedor provedorEscolhido)
-    {
-        var provedor = _serviceProvider.GetRequiredKeyedService<IProvedorBase>(provedorEscolhido);
+        var provedor = _serviceProvider.GetRequiredKeyedService<IProvedorBase>(Provedor.ServicoProvedor);
+        Provedor.Url = provedor.UrlPadrao;
+        Provedor.TagKey = provedor.TagKey;
+        Provedor.TimeoutMinutes = provedor.TimeoutMinutes;
+        Provedor.Descicao = provedor.Descricao;
     }
 
     private async Task Cadastro()
     {
+        using var context = DbFactory.CreateDbContext();
 
+        if (Novo)
+        {
+            context.Add(Provedor);
+        }
+        else
+        {
+            context.Update(Provedor);
+        }
+        await context.SaveChangesAsync();
+
+        Provedor = new();
+        Novo = true;
+        CarregaPadrao();
+        mensagemSucesso = true;
     }
 
     private void Cancelar()
     {
-        Provedor = new Provedor();
+        Provedor = new();
+        Novo = true;
+        CarregaPadrao();
         mensagemSucesso = false;
     }
 }
