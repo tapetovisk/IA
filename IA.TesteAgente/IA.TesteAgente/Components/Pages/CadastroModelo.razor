@@ -5,6 +5,7 @@
 @using IA.TesteAgente.Data
 @using IA.TesteAgente.Model
 @using Service.IA.Provedor.Base
+@using Service.IA.Enum
 
 @inject IDbContextFactory<dbContext> DbFactory
 @inject IServiceProvider _serviceProvider
@@ -27,7 +28,7 @@
                 </InputSelect>
             </div>
             <div class="col-4">
-                <button @onclick="BuscaModeloPadrao" >Buscar Modelo</button>
+                <button @onclick="BuscaModeloPadrao">Buscar Modelo</button>
             </div>
         </div>
 
@@ -44,8 +45,11 @@
                     <Virtualize Items="LstModelo" ItemSize="10" SpacerElement="tr">
                         <tr @key="context.id" style="height: 30px;" id="row-@context.id">
                             <td class="col-4">@context.Modelo</td>
-                            <td class="col-4">@context.Descricao</td>
-                            <td class="col-4"> <button >Editar</button>  </td>
+                            <td class="col-4">@LstProvedor.FirstOrDefault(f => f.id == context.IdProvedor)?.Descicao</td>
+                            <td class="col-4">
+                                <button @onclick="@(() => EditaModelo(context.id))">Editar</button> &ensp;&ensp;
+                                <button @onclick="@(() => RemoveModelos(context.id))">Remover</button>
+                            </td>
                         </tr>
                     </Virtualize>
                 </tbody>
@@ -56,9 +60,44 @@
 
     <div class="col-6">
 
-        <EditForm Model="Modelo" OnValidSubmit="Cadastro" FormName="CadastroProvedor">
+        <EditForm Model="Modelo" OnValidSubmit="Cadastro" FormName="CadastroModelo">
             <DataAnnotationsValidator />
             <ValidationSummary />
+
+            <div class="mb-12">
+                Provedor:
+                <InputSelect class="form-control mb-12" @bind-Value="Modelo.IdProvedor">
+                    @foreach (var tipo in LstProvedor)
+                    {
+                        <option value="@tipo.id">@tipo.Descicao</option>
+                    }
+                </InputSelect>
+
+                <ValidationMessage For="@(() => Modelo.IdProvedor)" />
+            </div>
+
+            <div class="mb-12">
+                Modelo:
+                <InputText class="form-control" @bind-Value="Modelo.Modelo" />
+                <ValidationMessage For="@(() => Modelo.Modelo)" />
+            </div>
+
+            <div class="mb-12">
+                Descrição:
+                <InputText class="form-control" @bind-Value="Modelo.Descricao" />
+                <ValidationMessage For="@(() => Modelo.Descricao)" />
+            </div>
+
+            <div class="mb-12">
+                Tipo Modelo:
+                <InputSelect class="form-control" @bind-Value="Modelo.TipoModelo">
+                    @foreach (var tipo in Enum.GetValues<EnumTipoModelo>())
+                    {
+                        <option value="@tipo">@tipo</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => Modelo.TipoModelo)" />
+            </div>
 
             <div>
                 <button type="submit" class="btn btn-primary">Salvar</button>
@@ -94,14 +133,29 @@
         LstModelo = context.ModeloLLM.ToList();
     }
 
-    void SetIdProvedor(ChangeEventArgs a)
+    public void EditaModelo(string id)
     {
-        idProvedor = a.Value.ToString();
+        Modelo = LstModelo.First(a => a.id == id);
+        Novo = false;
+    }
+
+    void SetIdProvedor(ChangeEventArgs a) => idProvedor = a.Value.ToString();
+
+    void RemoveModelos(string IdModelo)
+    {
+        using var context = DbFactory.CreateDbContext();
+        var modelo = LstModelo.First(a => a.id == IdModelo);
+        context.Remove(modelo);
+        context.SaveChanges();
+        BuscaModelo();
     }
 
     public async Task BuscaModeloPadrao()
     {
         var Model = LstProvedor.FirstOrDefault(f => f.id == idProvedor);
+        using var context = DbFactory.CreateDbContext();
+        context.RemoveRange(LstModelo.Where(a => a.IdProvedor == idProvedor));
+        context.SaveChanges();
 
         var provedor = _serviceProvider.GetRequiredKeyedService<IProvedorBase>(Model.ServicoProvedor);
 
@@ -112,13 +166,14 @@
 
         foreach (var item in await provedor.ModeloPadrao())
         {
-            Modelo = new (){
+            Modelo = new()
+            {
                 Modelo = item.Modelo,
                 Descricao = item.Descricao,
                 IdProvedor = idProvedor,
                 TipoModelo = item.TipoModelo,
                 Quantizacao = item.Quantizacao,
-                ServicoProvedor = Model.ServicoProvedor                
+                ServicoProvedor = Model.ServicoProvedor
             };
 
             Cadastro();
@@ -127,15 +182,20 @@
 
     void Cadastro()
     {
+        var Model = LstProvedor.FirstOrDefault(f => f.id == idProvedor);
+        Modelo.ServicoProvedor = Model.ServicoProvedor;
+
         using var context = DbFactory.CreateDbContext();
         if (Novo)
         {
             context.ModeloLLM.Add(Modelo);
-        } else
+        }
+        else
         {
             context.ModeloLLM.Update(Modelo);
         }
         context.SaveChanges();
+        Modelo = new();
         BuscaModelo();
     }
 
