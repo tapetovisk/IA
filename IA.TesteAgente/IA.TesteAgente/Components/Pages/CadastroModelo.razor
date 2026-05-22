@@ -99,7 +99,7 @@
         idProvedor = a.Value.ToString();
     }
 
-    public void BuscaModeloPadrao()
+    public async Task BuscaModeloPadrao()
     {
         var Model = LstProvedor.FirstOrDefault(f => f.id == idProvedor);
 
@@ -110,7 +110,7 @@
         provedor.SetProvedor(Model.Url, new Tuple<string, string>(Model.TagKey, Model.ApiKey), Model.TimeoutMinutes);
         Novo = true;
 
-        foreach (var item in provedor.ModeloPadrao())
+        foreach (var item in await provedor.ModeloPadrao())
         {
             Modelo = new (){
                 Modelo = item.Modelo,

@@ -31,7 +31,7 @@ namespace Service.IA.Provedor
             return openAIClient;
         }
 
-        public override List<Modelos> ModeloPadrao() => new List<Modelos>()
+        public async override Task<List<Modelos>> ModeloPadrao() => new List<Modelos>()
         {
             new Modelos()
             {

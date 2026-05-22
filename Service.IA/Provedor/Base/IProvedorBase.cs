@@ -36,6 +36,6 @@ namespace Service.IA.Provedor.Base
         IProvedorBase SetProvedor(string url, Tuple<string, string> apiKey, int timeoutMinutes);
         IProvedorBase SetProvedor(string apiKey);
         IChatClient SetMedolo(string model);
-        List<Modelos> ModeloPadrao();
+        Task<List<Modelos>> ModeloPadrao();
     }
 }

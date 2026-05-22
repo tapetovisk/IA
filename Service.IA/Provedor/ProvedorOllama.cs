@@ -7,6 +7,7 @@ using Service.IA.Model.Ollama;
 using Service.IA.Provedor.Base;
 using Service.IA.Provedor.Interface;
 using Service.IA.Util;
+using System.ClientModel;
 using System.ComponentModel;
 
 namespace Service.IA.Provedor
@@ -36,8 +37,14 @@ namespace Service.IA.Provedor
         /// <returns>O <see cref="OpenAIClient"/> configurado para o Ollama.</returns>
         internal override OpenAIClient SetProvedor()
         {
+            ApiKeyCredential credenciar;
+
+            credenciar = string.IsNullOrEmpty(apiKey.Item2) ?
+                new ApiKeyCredential("local") :
+                new ApiKeyCredential(apiKey.Item2);
+
             openAIClient = new OpenAIClient(
-                new System.ClientModel.ApiKeyCredential(""),
+                credenciar,
                 new OpenAIClientOptions
                 {
                     Endpoint = new Uri(base.url.TrimEnd('/') + "/v1")
@@ -59,13 +66,13 @@ namespace Service.IA.Provedor
         [Description("Retorna a lista de todos os modelos disponíveis no servidor Ollama via GET /api/models.")]
         public async Task<List<ModelosOllama>> GetListaModelos()
         {
-            var response = await _httpClient.GetAsync("/api/ps");
+            var response = await _httpClient.GetAsync("api/tags");
 
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();
-                var modelos = System.Text.Json.JsonSerializer.Deserialize<List<ModelosOllama>>(content);
-                return modelos;
+                var modelos = System.Text.Json.JsonSerializer.Deserialize<LstModelosOllama>(content);
+                return modelos?.models ?? new List<ModelosOllama>();
             }
             return new List<ModelosOllama>();
         }
@@ -125,15 +132,15 @@ namespace Service.IA.Provedor
             }
         }
 
-        public override List<Modelos> ModeloPadrao()
+        public async override Task<List<Modelos>> ModeloPadrao()
         {
-            var lista = GetListaModelos().Result;
+            var lista = await GetListaModelos();
 
             var modelos = new List<Modelos>();
 
             foreach (var item in lista)
             {
-                var detalhes = GetDetalhesModelo(item.model).Result;
+                var detalhes = await GetDetalhesModelo(item.model);
 
                 List<EnumTipoModelo> tipos = new List<EnumTipoModelo>();
                 foreach (var capability in detalhes.capabilities)

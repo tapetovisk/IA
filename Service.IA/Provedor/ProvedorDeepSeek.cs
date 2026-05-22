@@ -11,7 +11,7 @@ namespace Service.IA.Provedor
         public override string UrlPadrao { get; set; } = "https://api.deepseek.com/v1";
         public override string TagKey { get; set; } = "Authorization";
 
-        public override List<Modelos> ModeloPadrao() => new List<Modelos>()
+        public async override Task<List<Modelos>> ModeloPadrao() => new List<Modelos>()
         {
             new Modelos()
             {

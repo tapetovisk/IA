@@ -23,7 +23,7 @@ namespace Service.IA.Provedor
             [Description("Chave de API do serviço OpenAI.")] string apiKey)
             => SetProvedor(url, new Tuple<string, string>(TagKey, $"Bearer {apiKey}"));
 
-        public override List<Modelos> ModeloPadrao() => new List<Modelos>()
+        public async override Task<List<Modelos>> ModeloPadrao() => new List<Modelos>()
         {
             new Modelos()
                 {

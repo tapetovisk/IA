@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.AI;
 using OpenAI;
 using Service.IA.Model;
+using System.ClientModel;
 using System.ComponentModel;
 
 namespace Service.IA.Provedor.Base
@@ -83,10 +84,16 @@ namespace Service.IA.Provedor.Base
         /// <returns>O <see cref="OpenAIClient"/> recém-criado.</returns>
         internal virtual OpenAIClient SetProvedor()
         {
+            ApiKeyCredential credenciar;
+
+            credenciar = string.IsNullOrEmpty(apiKey.Item2) ?
+                new ApiKeyCredential("local") :
+                new ApiKeyCredential(apiKey.Item2);
+
             openAIClient = UrlPadrao == url ?
                 new OpenAIClient(apiKey.Item2) :
                 new OpenAIClient(
-                    new System.ClientModel.ApiKeyCredential(apiKey.Item2),
+                    credenciar,
                     new OpenAIClientOptions
                     {
                         Endpoint = new Uri(this.url)
@@ -95,6 +102,6 @@ namespace Service.IA.Provedor.Base
             return openAIClient;
         }
 
-        public virtual List<Modelos> ModeloPadrao() => new List<Modelos>();
+        public async virtual Task<List<Modelos>> ModeloPadrao() => await Task.FromResult(new List<Modelos>());
     }
 }

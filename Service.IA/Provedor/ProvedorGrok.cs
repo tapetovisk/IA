@@ -2,7 +2,6 @@
 using Service.IA.Model;
 using Service.IA.Provedor.Base;
 using Service.IA.Provedor.Interface;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Service.IA.Provedor
 {
@@ -12,7 +11,7 @@ namespace Service.IA.Provedor
         public override string UrlPadrao { get; set; } = "https://api.x.ai/v1";
         public override string TagKey { get; set; } = "Authorization";
 
-        public override List<Modelos> ModeloPadrao() => new List<Modelos>()
+        public async override Task<List<Modelos>> ModeloPadrao() => new List<Modelos>()
         {
             new Modelos()
             {

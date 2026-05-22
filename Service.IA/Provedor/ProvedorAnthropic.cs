@@ -16,7 +16,7 @@ namespace Service.IA.Provedor
            [Description("Chave de API do Azure OpenAI.")] string apiKey)
        => base.SetProvedor(url, new Tuple<string, string>(TagKey, apiKey), 10);
 
-        public override List<Modelos> ModeloPadrao() => new List<Modelos>()
+        public async override Task<List<Modelos>> ModeloPadrao() => new List<Modelos>()
         {
             new Modelos()
             {
