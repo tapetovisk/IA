@@ -21,7 +21,7 @@ namespace Service.IA.Agentes.Tool
         [Description("Valida se o prompt de entrada contém tentativas de contornar as proteções do modelo," +
             " como instruções para ignorar as regras, revelar o prompt do sistema, ou realizar injeção de prompt." +
             " Retorna false se qualquer tentativa for detectada.")]
-        public bool ValidaTextoBloqueado([Description("Prompt de entrada a ser validado")] string prompt)
+        public bool ValidaTextoBloqueado([Description("Prompt de entrada a ser validado")] string prompt) 
             => ValidaTexto(new string[]{
             "ignore previous instructions",
             "reveal your system prompt",
@@ -75,7 +75,7 @@ namespace Service.IA.Agentes.Tool
         [Description("Valida se o prompt de entrada contém tentativas de injeção de comandos," +
             " como instruções para enviar e-mails, apagar arquivos, ou comandos comuns de terminal." +
             " Retorna false se qualquer tentativa for detectada.")]
-        public bool ValidaInjecaoComado([Description("Prompt de entrada a ser validado")] string prompt)
+        public bool ValidaInjecaoComado([Description("Prompt de entrada a ser validado")] string prompt) 
             => ValidaTexto(new string[]{
                 "enviar e-mail ",
                 "mandar email ",

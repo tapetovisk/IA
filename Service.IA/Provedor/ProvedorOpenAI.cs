@@ -1,8 +1,13 @@
-﻿using Service.IA.Enum;
+﻿using Anthropic.Models.Beta.Messages;
+using Anthropic.Models.Messages;
+using Microsoft.Extensions.AI;
+using OllamaSharp;
+using Service.IA.Enum;
 using Service.IA.Model;
 using Service.IA.Provedor.Base;
 using Service.IA.Provedor.Interface;
 using System.ComponentModel;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Service.IA.Provedor
 {

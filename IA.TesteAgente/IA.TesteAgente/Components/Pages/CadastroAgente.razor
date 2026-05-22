@@ -4,41 +4,15 @@
 @using Microsoft.EntityFrameworkCore
 @using IA.TesteAgente.Data
 @using IA.TesteAgente.Model
-@using Service.IA.Enum
-@using IA.TesteAgente.Service
-@using Service.IA.Provedor.Base
 
 @inject IDbContextFactory<dbContext> DbFactory
-@inject IServiceProvider _serviceProvider
 
 <h3>Cadastro Agente</h3>
 
 <div class="row">
     <div class="col-6">
 
-        <table id="virtualized-table" class="col-12">
-            <thead style="position: sticky; top: 0; background-color: silver">
-                <tr>
-                    <th class="col-4">Nome</th>
-                    <th class="col-3">Descrição</th>
-                    <th class="col-2">Referencia</th>
-                    <th class="col-3"></th>
-                </tr>
-            </thead>
-            <tbody>
-                <Virtualize Items="ListAgente" ItemSize="10" SpacerElement="tr">
-                    <tr @key="context.id" style="height: 30px;" id="row-@context.id">
-                        <td class="col-4">@context.Nome</td>
-                        <td class="col-3">@context.Descricao</td>
-                        <td class="col-2">@context.Referencia</td>
-                        <td class="col-3">
-                            <button @onclick="@(() => EditaModelo(context.id))">Editar</button> &ensp;&ensp;
-                            <button @onclick="@(() => RemoveModelos(context.id))">Remover</button>
-                        </td>
-                    </tr>
-                </Virtualize>
-            </tbody>
-        </table>
+
 
     </div>
 
@@ -50,7 +24,7 @@
 
             <div class="mb-12">
                 Provedor:
-                <InputSelect class="form-control mb-12" @bind-Value="Agente.idProvedor" @onblur="SetProvedor">
+                <InputSelect class="form-control mb-12" @bind-Value="Agente.idProvedor" @onchange="@((a) => SetProvedor(a))">
                     <option value="">Selecione um provedor</option>
                     
                     @foreach (var provedor in ListProvedor)
@@ -76,95 +50,7 @@
                 <ValidationMessage For="@(() => Agente.idProvedor)" />
             </div>
 
-            <div class="mb-12">
-                Nome:
-                <InputText class="form-control" @bind-Value="Agente.Nome" />
-                <ValidationMessage For="@(() => Agente.Nome)" />
-            </div>
 
-            <div class="mb-12">
-                Descrição:
-                <InputText class="form-control" @bind-Value="Agente.Descricao" />
-                <ValidationMessage For="@(() => Agente.Descricao)" />
-            </div>
-
-            <div class="mb-12">
-                Instruções:<button @onclick="MelhoraPrompt">Melhorar</button>
-                <InputTextArea rows="5" class="form-control" @bind-Value="Agente.Instrucoes" />
-                <ValidationMessage For="@(() => Agente.Instrucoes)" />
-            </div>
-
-            <div class="mb-12">
-                GuardRail Entrada:
-                <InputSelect class="form-control mb-12" @bind-Value="Agente.GuardRailEntrada">
-                    <option value="">Selecione um GuardRail Entrada</option>
-
-                    @foreach (var modelo in ListFerramentas)
-                    {
-                        <option value="@modelo.id">@modelo.Nome</option>
-                    }
-                </InputSelect>
-
-                <ValidationMessage For="@(() => Agente.idProvedor)" />
-            </div>
-
-            <div class="mb-12">
-                Agente GuardRail Entrada:
-                <InputSelect class="form-control mb-12" @bind-Value="Agente.idModeloLLM">
-                    <option value="">Selecione um Agente GuardRail Entrada</option>
-
-                    @foreach (var modelo in ListAgente)
-                    {
-                        <option value="@modelo.id">@modelo.Nome</option>
-                    }
-                </InputSelect>
-
-                <ValidationMessage For="@(() => Agente.idProvedor)" />
-            </div>
-
-            <div class="mb-12">
-                GuardRail Saida:
-                <InputSelect class="form-control mb-12" @bind-Value="Agente.GuardRailSaida">
-                    <option value="">Selecione um GuardRail Saida</option>
-
-                    @foreach (var modelo in ListFerramentas)
-                    {
-                        <option value="@modelo.id">@modelo.Nome</option>
-                    }
-                </InputSelect>
-
-                <ValidationMessage For="@(() => Agente.idProvedor)" />
-            </div>
-
-            <div class="mb-12">
-                Agente GuardRail Saida:
-                <InputSelect class="form-control mb-12" @bind-Value="Agente.idAgenteGuardRailSaida">
-                    <option value="">Selecione um Agente GuardRail Saida</option>
-
-                    @foreach (var modelo in ListAgente)
-                    {
-                        <option value="@modelo.id">@modelo.Nome</option>
-                    }
-                </InputSelect>
-
-                <ValidationMessage For="@(() => Agente.idProvedor)" />
-            </div>
-
-            <div class="mb-12">
-                Tipo Saida:
-                <InputText class="form-control" @bind-Value="Agente.TipoSaida" />
-                <ValidationMessage For="@(() => Agente.TipoSaida)" />
-            </div>
-
-            <div class="mb-12">
-                Referencia:
-                <InputText class="form-control" @bind-Value="Agente.Referencia" />
-                <ValidationMessage For="@(() => Agente.Referencia)" />
-            </div>
-
-            <div class="mb-12">
-                <InputCheckbox @bind-Value="Agente.Memoria" /> Memoria
-            </div>
 
             <div>
                 <button type="submit" class="btn btn-primary">Salvar</button>
@@ -189,7 +75,6 @@
         using var context = await DbFactory.CreateDbContextAsync();
         ListAgente = await context.AgenteIA.ToListAsync();
         ListProvedor = await context.Provedor.ToListAsync();
-        ListFerramentas = await context.Ferramentas.Where(s => s.TipoFerramenta == EnumTipoFerramenta.GuardRail).ToListAsync();
     }
 
     private async Task Cadastro(EditContext args)
@@ -211,8 +96,9 @@
         Novo = true;
     }
 
-    public void SetProvedor()
+    public void SetProvedor(ChangeEventArgs a)
     {
+        Agente.idProvedor = a.Value.ToString();
         using var context = DbFactory.CreateDbContext();
         ListModelo = context.ModeloLLM.Where(a => a.IdProvedor == Agente.idProvedor).ToList();
     }
@@ -221,33 +107,5 @@
     {
         Agente = new AgenteIA();
         Novo = true;
-    }
-
-    private void EditaModelo(string id)
-    {
-        Agente = ListAgente.First(a => a.id == id);
-        Novo = false;
-    }
-
-    private async Task RemoveModelos(string id)
-    {
-        using var context = await DbFactory.CreateDbContextAsync();
-        var modeloRemove = await context.AgenteIA.FirstAsync(a => a.id == id);
-        context.AgenteIA.Remove(modeloRemove);
-        await context.SaveChangesAsync();
-        ListAgente = await context.AgenteIA.ToListAsync();
-    }
-
-    private void MelhoraPrompt()
-    {
-        var AgenteMelhora = ListAgente.Where(a => a.Referencia == "MelhoraPrompt").FirstOrDefault();
-        if (AgenteMelhora == null) return;
-        var ModelProvedor = ListProvedor.Where(a => a.id == AgenteMelhora.idProvedor).FirstOrDefault();
-
-        using var context = DbFactory.CreateDbContext();
-        var provedor = _serviceProvider.GetRequiredKeyedService<Service.IA.Provedor.Base.IProvedorBase>(ModelProvedor.ServicoProvedor);
-        
-        var Ag = new GeraAgente(context);
-
     }
 }

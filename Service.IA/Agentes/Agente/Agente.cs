@@ -21,11 +21,10 @@ namespace Service.IA.Agentes.Agente
             Session = await Agent.CreateSessionAsync();
             return Session;
         }
-        public void LimpaSession()
-        {
+        public void LimpaSession() {
             Session?.SetInMemoryChatHistory(new List<ChatMessage>());
             Session = null;
-        }
+        } 
         public void SetSession(AgentSession session) => Session = session;
         public void SetSession(List<ChatMessage> msg) => Session?.SetInMemoryChatHistory(msg);
 

@@ -1,4 +1,6 @@
-﻿using Service.IA.Provedor.Base;
+﻿using OllamaSharp;
+using Service.IA.Model;
+using Service.IA.Provedor.Base;
 using Service.IA.Provedor.Interface;
 using System.ComponentModel;
 
