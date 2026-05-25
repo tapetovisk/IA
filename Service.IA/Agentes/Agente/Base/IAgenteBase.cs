@@ -7,6 +7,7 @@ namespace Service.IA.Agentes.Agente.Base
     {
         void SetFuncao(Delegate funcao);
         void SetFuncao(ChatClientAgent Agente);
+        void SetFuncao(List<AITool> funcoes);
         void SetContextProvider(AIContextProvider contextProvider);
         void SetHistorico(ChatHistoryProvider historico);
         void SetHistorico();

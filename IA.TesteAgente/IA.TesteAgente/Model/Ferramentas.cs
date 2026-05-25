@@ -12,6 +12,6 @@ namespace IA.TesteAgente.Model
         public string Command { get; set; } = string.Empty;
         public string JsonArguments { get; set; } = string.Empty;
         public string Url { get; set; } = string.Empty;
-        public string NameSpace { get; set; } = string.Empty;
+        public string Classe { get; set; } = string.Empty;
     }
 }

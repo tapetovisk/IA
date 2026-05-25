@@ -4,9 +4,11 @@
 @using Microsoft.EntityFrameworkCore
 @using IA.TesteAgente.Data
 @using IA.TesteAgente.Model
+@using IA.TesteAgente.Servico
 @using Service.IA.Enum
 
 @inject IDbContextFactory<dbContext> DbFactory
+@inject IServiceProvider _serviceProvider
 
 <h3>Cadastro Agente</h3>
 
@@ -16,19 +18,21 @@
         <table id="virtualized-table" class="col-12">
             <thead style="position: sticky; top: 0; background-color: silver">
                 <tr>
-                    <th class="col-4">Nome</th>
+                    <th class="col-2">Nome</th>
                     <th class="col-3">Descrição</th>
+                    <th class="col-3">Modelo</th>
                     <th class="col-2">Referencia</th>
-                    <th class="col-3"></th>
+                    <th class="col-2"></th>
                 </tr>
             </thead>
             <tbody>
                 <Virtualize Items="ListAgente" ItemSize="10" SpacerElement="tr">
                     <tr @key="context.id" style="height: 30px;" id="row-@context.id">
-                        <td class="col-4">@context.Nome</td>
+                        <td class="col-2">@context.Nome</td>
                         <td class="col-3">@context.Descricao</td>
+                        <td class="col-3">@ListModeloAll?.Where(a => a.id == context.idModeloLLM).FirstOrDefault()?.Modelo </td>
                         <td class="col-2">@context.Referencia</td>
-                        <td class="col-3">
+                        <td class="col-2">
                             <button @onclick="@(() => EditaModelo(context.id))">Editar</button> &ensp;&ensp;
                             <button @onclick="@(() => RemoveModelos(context.id))">Remover</button>
                         </td>
@@ -86,7 +90,7 @@
             </div>
 
             <div class="mb-12">
-                Instruções:<button >Melhorar</button>
+                Instruções:<a @onclick="MelhoraPrompt" >Melhorar</a>
                 <InputTextArea rows="5" class="form-control" @bind-Value="Agente.Instrucoes" />
                 <ValidationMessage For="@(() => Agente.Instrucoes)" />
             </div>
@@ -178,6 +182,7 @@
     public List<AgenteIA> ListAgente { get; set; } = new();
     public List<Provedor> ListProvedor { get; set; } = new();
     public List<ModeloLLM> ListModelo { get; set; } = new();
+    public List<ModeloLLM> ListModeloAll { get; set; } = new();
     public List<Ferramentas> ListFerramentas { get; set; } = new();
     public bool Novo { get; set; } = true;
 
@@ -187,6 +192,7 @@
         ListAgente = await context.AgenteIA.ToListAsync();
         ListProvedor = await context.Provedor.ToListAsync();
         ListFerramentas = await context.Ferramentas.Where(s => s.TipoFerramenta == EnumTipoFerramenta.GuardRail).ToListAsync();
+        ListModeloAll = context.ModeloLLM.ToList();
     }
 
     private async Task Cadastro(EditContext args)
@@ -208,17 +214,10 @@
         Novo = true;
     }
 
-    public void SetProvedor(ChangeEventArgs a)
-    {
-        Agente.idProvedor = a.Value.ToString();
-        using var context = DbFactory.CreateDbContext();
-        ListModelo = context.ModeloLLM.Where(a => a.IdProvedor == Agente.idProvedor).ToList();
-    }
-
     public void SetProvedor()
     {
         using var context = DbFactory.CreateDbContext();
-        ListModelo = context.ModeloLLM.Where(a => a.IdProvedor == Agente.idProvedor).ToList();
+        ListModelo = ListModeloAll.Where(a => a.IdProvedor == Agente.idProvedor).ToList();
     }
 
     private void Cancelar()
@@ -240,5 +239,18 @@
         context.AgenteIA.Remove(modeloRemove);
         await context.SaveChangesAsync();
         ListAgente = await context.AgenteIA.ToListAsync();
+    }
+
+    private async Task MelhoraPrompt()
+    {
+        using var context = await DbFactory.CreateDbContextAsync();
+        var AgenteMelhora = await context.AgenteIA.Where(a => a.Referencia == "MelhoraPrompt").FirstAsync();
+
+        var ModentaAgente = new MonteAgente(DbFactory, _serviceProvider);
+        await ModentaAgente.SetAgente(AgenteMelhora.id);
+
+        var v = await ModentaAgente.Agente.RunAsync<string>(Agente.Instrucoes);
+
+        Agente.Instrucoes = v.Result;
     }
 }

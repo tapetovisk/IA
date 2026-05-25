@@ -1,18 +1,17 @@
 ﻿using Azure;
 using Azure.AI.OpenAI;
-using Microsoft.Extensions.AI;
 using OpenAI;
 using Service.IA.Enum;
 using Service.IA.Model;
 using Service.IA.Provedor.Base;
 using Service.IA.Provedor.Interface;
 using System.ComponentModel;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Service.IA.Provedor
 {
     public class ProvedorAzureOpenAI : ProvedorBase, IProvedorAzureOpenAI
     {
+        public override string UrlPadrao { get; set; } = "https://testegpt.openai.azure.com";
         public override string Descricao { get; set; } = "Azure OpenAI";
         public override string TagKey { get; set; } = "api-key";
 
@@ -46,7 +45,7 @@ namespace Service.IA.Provedor
                 Modelo = "text-embedding-3-small",
                 TipoModelo = new EnumTipoModelo[] { EnumTipoModelo.Embedding },
                 Quantizacao = "float16"
-            }, 
+            },
             new Modelos()
             {
                 Descricao = "Modelo de exemplo para Azure OpenAI",

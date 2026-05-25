@@ -40,9 +40,9 @@ namespace Service.IA.Provedor.Base
             _httpClient.Timeout = TimeSpan.FromMinutes(TimeoutMinutes);
             _httpClient.BaseAddress = new Uri(url);
 
-            if (string.IsNullOrEmpty(apiKey.Item1) || string.IsNullOrEmpty(apiKey.Item2))
+            if (!string.IsNullOrEmpty(apiKey.Item1) || !string.IsNullOrEmpty(apiKey.Item2))
             {
-                if (TagKey == "Authorization")
+                if (TagKey == "Authorization" || string.IsNullOrEmpty(apiKey.Item1))
                 {
                     _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey.Item2);
                 }
@@ -71,10 +71,8 @@ namespace Service.IA.Provedor.Base
             if (openAIClient == null) return null;
             if (string.IsNullOrEmpty(model)) return null;
 
-            return (IChatClient)openAIClient.GetChatClient(model);
+            return openAIClient.GetChatClient(model).AsIChatClient();
         }
-
-
 
         /// <summary>
         /// Inicializa o <see cref="openAIClient"/> com as credenciais e o endpoint configurados.

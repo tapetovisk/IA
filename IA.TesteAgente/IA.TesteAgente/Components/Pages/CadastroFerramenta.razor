@@ -82,9 +82,9 @@
             </div>
 
             <div class="mb-12">
-                Name Space:
-                <InputText class="form-control" @bind-Value="Modelo.NameSpace" />
-                <ValidationMessage For="@(() => Modelo.NameSpace)" />
+                Classe:
+                <InputText class="form-control" @bind-Value="Modelo.Classe" />
+                <ValidationMessage For="@(() => Modelo.Classe)" />
             </div>
 
             <div>
@@ -162,7 +162,7 @@
                 Command = "BuscaPromptAsync",
                 JsonArguments = "",
                 Url = "",
-                NameSpace = "Service.IA.Agentes.Tool"
+                Classe = "Service.IA.Agentes.Tool.Arquivo"
             },
             new Ferramentas
             {
@@ -171,7 +171,7 @@
                 Command = "GravarPromptAsync",
                 JsonArguments = "",
                 Url = "",
-                NameSpace = "Service.IA.Agentes.Tool"
+                Classe = "Service.IA.Agentes.Tool.Arquivo"
             },
             new Ferramentas
             {
@@ -180,7 +180,7 @@
                 Command = "DeletarPromptAsync",
                 JsonArguments = "",
                 Url = "",
-                NameSpace = "Service.IA.Agentes.Tool"
+                Classe = "Service.IA.Agentes.Tool.Arquivo"
             },
             new Ferramentas
             {
@@ -189,7 +189,7 @@
                 Command = "BuscaArquivoAsync",
                 JsonArguments = "",
                 Url = "",
-                NameSpace = "Service.IA.Agentes.Tool"
+                Classe = "Service.IA.Agentes.Tool.Arquivo"
             },
             new Ferramentas
             {
@@ -198,7 +198,7 @@
                 Command = "GravarArquivoAsync",
                 JsonArguments = "",
                 Url = "",
-                NameSpace = "Service.IA.Agentes.Tool"
+                Classe = "Service.IA.Agentes.Tool.Arquivo"
             },
             new Ferramentas
             {
@@ -207,7 +207,7 @@
                 Command = "DeletarArquivoAsync",
                 JsonArguments = "",
                 Url = "",
-                NameSpace = "Service.IA.Agentes.Tool"
+                Classe = "Service.IA.Agentes.Tool.Arquivo"
             },
             new Ferramentas
             {
@@ -216,7 +216,7 @@
                 Command = "ValidaTudo",
                 JsonArguments = "",
                 Url = "",
-                NameSpace = "Service.IA.Agentes.Tool"
+                Classe = "Service.IA.Agentes.Tool.GuardRailIn"
             },
             new Ferramentas
             {
@@ -225,7 +225,7 @@
                 Command = "ValidaTextoBloqueado",
                 JsonArguments = "",
                 Url = "",
-                NameSpace = "Service.IA.Agentes.Tool"
+                Classe = "Service.IA.Agentes.Tool.GuardRailIn"
             },
             new Ferramentas
             {
@@ -234,7 +234,7 @@
                 Command = "ValidaInjecaoSQL",
                 JsonArguments = "",
                 Url = "",
-                NameSpace = "Service.IA.Agentes.Tool"
+                Classe = "Service.IA.Agentes.Tool.GuardRailIn"
             },
             new Ferramentas
             {
@@ -243,7 +243,7 @@
                 Command = "ValidaInjecaoCodigo",
                 JsonArguments = "",
                 Url = "",
-                NameSpace = "Service.IA.Agentes.Tool"
+                Classe = "Service.IA.Agentes.Tool.GuardRailIn"
             },
             new Ferramentas
             {
@@ -252,7 +252,7 @@
                 Command = "ValidaInjecaoComando",
                 JsonArguments = "",
                 Url = "",
-                NameSpace = "Service.IA.Agentes.Tool"
+                Classe = "Service.IA.Agentes.Tool.GuardRailIn"
             },
             new Ferramentas
             {
@@ -261,7 +261,7 @@
                 Command = "ValidaInjecaoBinarios",
                 JsonArguments = "",
                 Url = "",
-                NameSpace = "Service.IA.Agentes.Tool"
+                Classe = "Service.IA.Agentes.Tool.GuardRailIn"
             },
             new Ferramentas
             {
@@ -270,7 +270,7 @@
                 Command = "ValidateTudoOut",
                 JsonArguments = "",
                 Url = "",
-                NameSpace = "Service.IA.Agentes.Tool"
+                Classe = "Service.IA.Agentes.Tool.GuardRailOut"
             },
             new Ferramentas
             {
@@ -279,7 +279,7 @@
                 Command = "ValidateDadosBanco",
                 JsonArguments = "",
                 Url = "",
-                NameSpace = "Service.IA.Agentes.Tool"
+                Classe = "Service.IA.Agentes.Tool.GuardRailOut"
             },
             new Ferramentas
             {
@@ -288,7 +288,7 @@
                 Command = "ValidateDadosLogin",
                 JsonArguments = "",
                 Url = "",
-                NameSpace = "Service.IA.Agentes.Tool"
+                Classe = "Service.IA.Agentes.Tool.GuardRailOut"
             },
             new Ferramentas
             {
@@ -297,7 +297,7 @@
                 Command = "ValidateDadosPessoais",
                 JsonArguments = "",
                 Url = "",
-                NameSpace = "Service.IA.Agentes.Tool"
+                Classe = "Service.IA.Agentes.Tool.GuardRailOut"
             },
             new Ferramentas
             {
@@ -306,7 +306,7 @@
                 Command = "ValidateDadosFinanceiros",
                 JsonArguments = "",
                 Url = "",
-                NameSpace = "Service.IA.Agentes.Tool"
+                Classe = "Service.IA.Agentes.Tool.GuardRailOut"
             },
             new Ferramentas
             {
@@ -315,7 +315,7 @@
                 Command = "ValidateDadosRedes",
                 JsonArguments = "",
                 Url = "",
-                NameSpace = "Service.IA.Agentes.Tool"
+                Classe = "Service.IA.Agentes.Tool.GuardRailOut"
             }
         };
 

@@ -6,10 +6,19 @@ namespace Service.IA.Agentes.Agente.Base
 {
     public class AgenteBase : IAgenteBase
     {
-        internal ChatClientAgent? Agent { get; set; } = null;
+        public ChatClientAgent? Agent { get; set; } = null;
         private List<AITool> Funcoes { get; set; } = new List<AITool>();
         private List<AIContextProvider> ContextProviders { get; set; } = new List<AIContextProvider>();
         private ChatHistoryProvider? Historico { get; set; } = null;
+
+        [Description("Adiciona uma função ao agente")]
+        public void SetFuncao([Description("As funções a serem adicionadas ao agente")] List<AITool> funcoes)
+        {
+            foreach (var funcao in funcoes)
+            {
+                SetFuncao(funcao);
+            }
+        }
 
         [Description("Adiciona uma função ao agente")]
         public void SetFuncao(
@@ -79,8 +88,8 @@ namespace Service.IA.Agentes.Agente.Base
             if(Historico != null) system?.ChatHistoryProvider = Historico;
             if(ContextProviders.Any()) system?.AIContextProviders = ContextProviders;
 
-            var agent = client.AsAIAgent(system);
-            return agent;
+            Agent = client.AsAIAgent(system);
+            return Agent;
         }
     }
 }
