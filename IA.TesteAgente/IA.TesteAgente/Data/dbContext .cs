@@ -43,6 +43,14 @@ namespace IA.TesteAgente.Data
                 .HasColumnType("vector(768)");
             });
 
+            modelBuilder.Entity<Rag>(entity =>
+            {
+                entity.ToTable("rag");
+                entity.Property(e => e.EmbeddingPalavrasChave)
+                .HasColumnName("EmbeddingPalavrasChave")
+                .HasColumnType("vector(768)");
+            });
+
             modelBuilder.Entity<PerguntasResposta>(entity =>
             {
                 entity.ToTable("perguntasResposta");

@@ -1,0 +1,99 @@
+﻿@page "/cadastroRAG"
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+
+@using IA.TesteAgente.Model
+@using Microsoft.EntityFrameworkCore
+@using IA.TesteAgente.Data
+@using IA.TesteAgente.Servico
+@using Pgvector;
+
+@inject IDbContextFactory<dbContext> DbFactory
+@inject IServiceProvider _serviceProvider
+
+
+<h3>CadastroRAG</h3>
+
+<div class="row">
+    <div class="col-6">
+    </div>
+
+    <div class="col-6">
+
+        <div class="mb-12">
+            Produto:
+            <Input type="text" class="form-control" @bind="Produto" @bind:event="oninput" />
+        </div>
+
+        <div class="mb-12">
+            Texto (Manual)
+            <textarea @bind="Texto" rows="15" class="form-control" @bind:event="oninput"></textarea>
+        </div>
+
+        <div>
+            <button type="submit" class="btn btn-primary" @onclick="PreparaRag">Prepara Rag</button>
+        </div>
+
+        @foreach (var item in RagTexto)
+        {
+            <div class="mb-12">
+                <InputTextArea rows="5" class="form-control" @bind-Value="item.Texto" @bind-Value:event="oninput" />
+            </div>
+        }
+
+        <div>
+            <button type="submit" class="btn btn-primary" @onclick="Cadastrar">Cadastrar</button>
+        </div>
+
+    </div>
+</div>
+
+@code {
+    public List<Rag> Rags { get; set; } = new();
+    public string Texto { get; set; } = "";
+    public string Produto { get; set; } = "";
+    public List<Rag> RagTexto { get; set; } = new();
+
+    async Task PreparaRag()
+    {
+        using var context = await DbFactory.CreateDbContextAsync();
+        var AgenteMelhora = await context.AgenteIA.Where(a => a.Referencia == "PreparaRag").FirstAsync();
+
+        var ModentaAgente = new MonteAgente(DbFactory, _serviceProvider);
+        await ModentaAgente.SetAgente(AgenteMelhora.id);
+
+        var v = await ModentaAgente.Agente.RunAsync<List<DetalhesRag>>(Texto);
+
+        foreach (var item in v.Result)
+        {
+            RagTexto.Add(new Rag()
+            {
+                Produto = Produto,
+                Paragrafo = item.id_fragmento,
+                CapituloSecao = item.metadados.capitulo_secao,
+                PalavrasChave = item.metadados.palavras_chave,
+                Texto = item.conteudo_para_vetorizacao
+            });
+        }
+    }
+
+    async Task Cadastrar()
+    {
+        using var context = await DbFactory.CreateDbContextAsync();
+        var AgenteEmbedding = await context.AgenteIA.Where(a => a.Referencia == "Embedding").FirstAsync();
+
+        var ModentaAgente = new MonteAgente(DbFactory, _serviceProvider);
+        await ModentaAgente.SetAgente(AgenteEmbedding.id);
+
+        foreach (var item in RagTexto)
+        {
+            var Resp = await ModentaAgente.Agente.RunAsync<Vector>(item.Texto);
+            item.EmbeddingTexto = Resp.Result;
+
+            Resp = await ModentaAgente.Agente.RunAsync<Vector>(item.PalavrasChave.ToString());
+            item.EmbeddingPalavrasChave = Resp.Result;
+        }
+        
+        context.Rags.AddRange(RagTexto);
+        await context.SaveChangesAsync();
+    }
+}
