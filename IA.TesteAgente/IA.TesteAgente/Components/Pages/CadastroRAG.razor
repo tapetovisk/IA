@@ -6,6 +6,7 @@
 @using IA.TesteAgente.Data
 @using IA.TesteAgente.Servico
 @using Pgvector;
+@using OpenAI;
 
 @inject IDbContextFactory<dbContext> DbFactory
 @inject IServiceProvider _serviceProvider
@@ -84,8 +85,23 @@
         var ModentaAgente = new MonteAgente(DbFactory, _serviceProvider);
         await ModentaAgente.SetAgente(AgenteEmbedding.id);
 
+        //// Inicializa o cliente (com API Key ou credencial)
+        //var client = new OpenAIClient(apiKey);
+        //
+        //// Cria o embedding
+        //var response = await client.Embeddings.CreateAsync(
+        //    model: "text-embedding-ada-002",
+        //    input: "Texto que você quer transformar em vetor"
+        //);
+        //
+        //// Resultado
+        //var embedding = response.Data[0].Embedding;
+
         foreach (var item in RagTexto)
         {
+
+
+
             var Resp = await ModentaAgente.Agente.RunAsync<Vector>(item.Texto);
             item.EmbeddingTexto = Resp.Result;
 
