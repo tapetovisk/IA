@@ -81,7 +81,7 @@ namespace Service.IA.Provedor
         [Description("Retorna a lista de todos os modelos disponíveis no servidor Ollama via GET /api/models.")]
         public async Task<List<ModelosOllama>> GetListaModelos()
         {
-            var response = await _httpClient.GetAsync("v1/api/tags");
+            var response = await _httpClient.GetAsync("api/tags");
 
             if (response.IsSuccessStatusCode)
             {
@@ -96,7 +96,7 @@ namespace Service.IA.Provedor
         public async Task<ModeloDetalhe> GetDetalhesModelo(
             [Description("Nome do modelo para o qual os detalhes serão retornados.")] string model)
         {
-            var response = await _httpClient.PostAsync("v1/api/show", Conversor.ConvertJson(new { model }));
+            var response = await _httpClient.PostAsync("api/show", Conversor.ConvertJson(new { model }));
 
             if (response.IsSuccessStatusCode)
             {
@@ -114,7 +114,7 @@ namespace Service.IA.Provedor
         {
             try
             {
-                var response = await _httpClient.PostAsync("v1/api/pull", Conversor.ConvertJson(new { model }));
+                var response = await _httpClient.PostAsync("api/pull", Conversor.ConvertJson(new { model }));
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -134,7 +134,7 @@ namespace Service.IA.Provedor
         {
             try
             {
-                var response = await _httpClient.PostAsync("v1/api/delete", Conversor.ConvertJson(new { model }));
+                var response = await _httpClient.PostAsync("api/delete", Conversor.ConvertJson(new { model }));
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();

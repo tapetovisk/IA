@@ -11,7 +11,7 @@ namespace IA.TesteAgente.Data
         public DbSet<ModeloLLM> ModeloLLM { get; set; }
         public DbSet<PerguntasResposta> PerguntasRespostas { get; set; }
         public DbSet<Provedor> Provedor { get; set; }
-        public DbSet<Rag> Rags { get; set; }
+        public DbSet<Rags> Rags { get; set; }
         public DbSet<Rel_Agente_Ferramentas> Rel_Agente_Ferramentas { get; set; }
         public DbSet<Rel_Agente_PerguntasResposta> Rel_Agente_PerguntasResposta { get; set; }
         public DbSet<Rel_Agente_Rag> Rel_Agente_Rag { get; set; }
@@ -35,7 +35,7 @@ namespace IA.TesteAgente.Data
 
             modelBuilder.HasPostgresExtension("vector");
 
-            modelBuilder.Entity<Rag>(entity =>
+            modelBuilder.Entity<Rags>(entity =>
             {
                 entity.ToTable("rag");
                 entity.Property(e => e.EmbeddingTexto)
@@ -43,7 +43,7 @@ namespace IA.TesteAgente.Data
                 .HasColumnType("vector(768)");
             });
 
-            modelBuilder.Entity<Rag>(entity =>
+            modelBuilder.Entity<Rags>(entity =>
             {
                 entity.ToTable("rag");
                 entity.Property(e => e.EmbeddingPalavrasChave)

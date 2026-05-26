@@ -48,13 +48,13 @@
 </div>
 
 @code {
-    public List<Rag> Rags { get; set; } = new();
+    public List<Rags> Rags { get; set; } = new();
     public string Texto { get; set; } = "";
     public string Produto { get; set; } = "";
-    public List<Rag> RagTexto { get; set; } = new();
+    public List<Rags> RagTexto { get; set; } = new();
     public bool Aguarde { get; set; } = false;
 
-        async Task PreparaRag()
+    async Task PreparaRag()
     {
         Aguarde = true;
         using var context = await DbFactory.CreateDbContextAsync();
@@ -67,7 +67,7 @@
 
         foreach (var item in v.Result)
         {
-            RagTexto.Add(new Rag()
+            RagTexto.Add(new Rags()
             {
                 Produto = Produto,
                 Paragrafo = item.id_fragmento,
@@ -89,14 +89,43 @@
 
         foreach (var item in RagTexto)
         {
-            var Resp = ModentaAgente.embeddingClient?.GenerateEmbedding(item.Texto);
-            item.EmbeddingTexto = new Pgvector.Vector(Resp?.Value.ToFloats().ToArray());
+            try
+            {
+                var Resp = ModentaAgente.embeddingClient?.GenerateEmbedding(item.Texto);
+                item.EmbeddingTexto = new Pgvector.Vector(Resp?.Value.ToFloats().ToArray());
 
-            Resp = ModentaAgente.embeddingClient?.GenerateEmbedding(item.PalavrasChave.ToString());
-            item.EmbeddingPalavrasChave = new Pgvector.Vector(Resp?.Value.ToFloats().ToArray()); 
+                Resp = ModentaAgente.embeddingClient?.GenerateEmbedding(item.PalavrasChave.ToString());
+                item.EmbeddingPalavrasChave = new Pgvector.Vector(Resp?.Value.ToFloats().ToArray());
+
+            } 
+            catch (TaskCanceledException ex)
+            {
+                var a = ex.Message;
+            }
+
+            item.Produto = Produto;
+            item.idAgente = AgenteEmbedding.id;
+            item.idModeloLLM = AgenteEmbedding.idModeloLLM;
         }
-        
-        context.Rags.AddRange(RagTexto);
-        await context.SaveChangesAsync();
+
+        foreach (var item in RagTexto)
+        {
+            try
+            {
+                context.Rags.Add(item);
+            } catch (Exception ex)
+            {
+                var a = ex.Message;
+            }
+
+            try
+            {
+                await context.SaveChangesAsync();
+            } 
+            catch (DbUpdateException ex)
+            {
+                var a = ex.Message;
+            }
+        }
     }
 }

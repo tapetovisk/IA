@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace IA.TesteAgente.Model
 {
-    public class Rag
+    public class Rags
     {
         [Key]
         public string id { get; set; } = Guid.NewGuid().ToString();

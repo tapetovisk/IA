@@ -8,13 +8,20 @@
 
 <PageTitle>Home</PageTitle>
 
+<textarea @bind="Texto" rows="15" class="form-control"></textarea>
+
 <button class="btn btn-primary" @onclick="GeraBanco">Gera Banco</button>
 
 @code {
+    public string Texto { get; set; } = "";
+
 
     private void GeraBanco()
     {
         using var context = DbFactory.CreateDbContext();
-        context.Database.EnsureCreated();
+        //context.Database.EnsureCreated();
+
+        var script = context.Database.GenerateCreateScript();
+        Texto = script;
     }
 }
