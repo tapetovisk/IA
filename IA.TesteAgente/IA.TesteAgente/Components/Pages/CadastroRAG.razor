@@ -11,48 +11,115 @@
 @inject IServiceProvider _serviceProvider
 
 <Aguardando Aguarde="@Aguarde"></Aguardando>
-<h3>CadastroRAG</h3>
+<h3>Cadastro RAG</h3>
 
 <div class="row">
     <div class="col-6">
+
+        <table id="virtualized-table" class="col-12">
+            <thead style="position: sticky; top: 0; background-color: silver">
+                <tr>
+                    <th class="col-4">Produto</th>
+                    <th class="col-5">Capítulo/Seção</th>
+                    <th class="col-2"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <Virtualize Items="ListRags" ItemSize="10" SpacerElement="tr">
+                    <tr @key="context.id" style="height: 30px;" id="row-@context.id">
+                        <td class="col-4">@context.Produto</td>
+                        <td class="col-5">@context.CapituloSecao</td>
+                        <td class="col-2">
+                            <button @onclick="@(() => EditaModelo(context.id))">Editar</button> &ensp;&ensp;
+                            <button @onclick="@(() => RemoveModelos(context.id))">Remover</button>
+                        </td>
+                    </tr>
+                </Virtualize>
+            </tbody>
+        </table>
+
     </div>
 
     <div class="col-6">
 
-        <div class="mb-12">
-            Produto:
-            <Input type="text" class="form-control" @bind="Produto" @bind:event="oninput" />
-        </div>
-
-        <div class="mb-12">
-            Texto (Manual)
-            <textarea @bind="Texto" rows="15" class="form-control" @bind:event="oninput"></textarea>
-        </div>
-
-        <div>
-            <button type="submit" class="btn btn-primary" @onclick="PreparaRag">Prepara Rag</button>
-        </div>
-
-        @foreach (var item in RagTexto)
+        @if (Novo)
         {
             <div class="mb-12">
-                <InputTextArea rows="5" class="form-control" @bind-Value="item.Texto" @bind-Value:event="oninput" />
+                Produto:
+                <input type="text" class="form-control" @bind="Produto" @bind:event="oninput" />
+            </div>
+
+            <div class="mb-12">
+                Texto (Manual)
+                <textarea @bind="Texto" rows="15" class="form-control" @bind:event="oninput"></textarea>
+            </div>
+
+            <div>
+                <button type="submit" class="btn btn-primary" @onclick="PreparaRag">Prepara Rag</button>
+            </div>
+
+            @foreach (var item in RagTexto)
+            {
+                <div class="mb-12">
+                    <InputTextArea rows="5" class="form-control" @bind-Value="item.Texto" @bind-Value:event="oninput" />
+                </div>
+            }
+
+            <div>
+                <button type="submit" class="btn btn-primary" @onclick="Cadastrar">Cadastrar</button>
+                <button type="button" class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
             </div>
         }
+        else
+        {
+            <EditForm Model="Rag" OnValidSubmit="EditCadastro" FormName="CadastroRAG">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
 
-        <div>
-            <button type="submit" class="btn btn-primary" @onclick="Cadastrar">Cadastrar</button>
-        </div>
+                <div class="mb-12">
+                    Produto:
+                    <InputText class="form-control" @bind-Value="Rag.Produto" />
+                    <ValidationMessage For="@(() => Rag.Produto)" />
+                </div>
+
+                <div class="mb-12">
+                    Capitulo / Seção:
+                    <InputText class="form-control" @bind-Value="Rag.CapituloSecao" />
+                    <ValidationMessage For="@(() => Rag.CapituloSecao)" />
+                </div>
+
+                <div class="mb-12">
+                    Texto:
+                    <InputTextArea rows="5" class="form-control" @bind-Value="Rag.Texto" />
+                    <ValidationMessage For="@(() => Rag.Texto)" />
+                </div>
+
+                <div>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                    <button type="button" class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
+                </div>
+            </EditForm>
+        }
 
     </div>
 </div>
 
 @code {
-    public List<Rags> Rags { get; set; } = new();
+    public Rags Rag { get; set; } = new();
+    public List<Rags> ListRags { get; set; } = new();
     public string Texto { get; set; } = "";
     public string Produto { get; set; } = "";
     public List<Rags> RagTexto { get; set; } = new();
     public bool Aguarde { get; set; } = false;
+    public bool Novo { get; set; } = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Aguarde = true;
+        using var context = await DbFactory.CreateDbContextAsync();
+        ListRags = await context.Rags.ToListAsync();
+        Aguarde = false;
+    }
 
     async Task PreparaRag()
     {
@@ -81,6 +148,7 @@
 
     async Task Cadastrar()
     {
+        Aguarde = true;
         using var context = await DbFactory.CreateDbContextAsync();
         var AgenteEmbedding = await context.AgenteIA.Where(a => a.Referencia == "Embedding").FirstAsync();
 
@@ -106,26 +174,70 @@
             item.Produto = Produto;
             item.idAgente = AgenteEmbedding.id;
             item.idModeloLLM = AgenteEmbedding.idModeloLLM;
-        }
 
-        foreach (var item in RagTexto)
-        {
             try
             {
                 context.Rags.Add(item);
-            } catch (Exception ex)
+                await context.SaveChangesAsync();
+            } catch (DbUpdateException ex)
             {
                 var a = ex.Message;
             }
 
-            try
-            {
-                await context.SaveChangesAsync();
-            } 
-            catch (DbUpdateException ex)
-            {
-                var a = ex.Message;
-            }
+            ListRags = await context.Rags.ToListAsync();
         }
+        Aguarde = false;
+    }
+
+    async Task EditCadastro()
+    {
+        Aguarde = true;
+        using var context = await DbFactory.CreateDbContextAsync();
+        var AgenteEmbedding = await context.AgenteIA.Where(a => a.Referencia == "Embedding").FirstAsync();
+
+        var ModentaAgente = new MonteAgente(DbFactory, _serviceProvider);
+        await ModentaAgente.SetAgente(AgenteEmbedding.id);
+
+        var Resp = ModentaAgente.embeddingClient?.GenerateEmbedding(Rag.Texto);
+        Rag.EmbeddingTexto = new Pgvector.Vector(Resp?.Value.ToFloats().ToArray());
+
+        Resp = ModentaAgente.embeddingClient?.GenerateEmbedding(Rag.PalavrasChave.ToString());
+        Rag.EmbeddingPalavrasChave = new Pgvector.Vector(Resp?.Value.ToFloats().ToArray());
+
+        try
+        {
+            context.Rags.Update(Rag);
+            await context.SaveChangesAsync();
+        } catch (DbUpdateException ex)
+        {
+            var a = ex.Message;
+        }
+
+        ListRags = await context.Rags.ToListAsync();
+        Novo = true;
+        Rag = new();
+        Aguarde = false;
+    }
+
+    private void EditaModelo(string id) {
+        Rag = ListRags.Where(a => a.id == id).FirstOrDefault();
+        Novo = false;
+    }
+    
+    private async Task RemoveModelos(string id)
+    {
+        Aguarde = true;
+        using var context = await DbFactory.CreateDbContextAsync();
+        var modeloRemove = await context.Rags.FirstAsync(a => a.id == id);
+        context.Rags.Remove(modeloRemove);
+        await context.SaveChangesAsync();
+        ListRags = await context.Rags.ToListAsync();
+        Aguarde = false;
+    }
+
+    private void Cancelar()
+    {
+        Rag = new Rags();
+        Novo = true;
     }
 }
