@@ -94,6 +94,12 @@
                     <ValidationMessage For="@(() => Rag.Texto)" />
                 </div>
 
+                <div class="mb-12">
+                    Palavra Chave:
+                    <InputTextArea rows="3" class="form-control" @bind-Value="PalavrasChaveTexto" />
+                    <ValidationMessage For="@(() => Rag.PalavrasChave)" />
+                </div>
+
                 <div>
                     <button type="submit" class="btn btn-primary">Salvar</button>
                     <button type="button" class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
@@ -112,6 +118,15 @@
     public List<Rags> RagTexto { get; set; } = new();
     public bool Aguarde { get; set; } = false;
     public bool Novo { get; set; } = true;
+
+    // Propriedade auxiliar para converter entre string e string[]
+    private string PalavrasChaveTexto
+    {
+        get => Rag.PalavrasChave != null ? string.Join(", ", Rag.PalavrasChave) : string.Empty;
+        set => Rag.PalavrasChave = value?.Split(',', StringSplitOptions.RemoveEmptyEntries)
+                                         .Select(s => s.Trim())
+                                         .ToArray() ?? Array.Empty<string>();
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -162,7 +177,7 @@
                 var Resp = ModentaAgente.embeddingClient?.GenerateEmbedding(item.Texto);
                 item.EmbeddingTexto = new Pgvector.Vector(Resp?.Value.ToFloats().ToArray());
 
-                Resp = ModentaAgente.embeddingClient?.GenerateEmbedding(item.PalavrasChave.ToString());
+                Resp = ModentaAgente.embeddingClient?.GenerateEmbedding(string.Join(", ", item.PalavrasChave ?? Array.Empty<string>()));
                 item.EmbeddingPalavrasChave = new Pgvector.Vector(Resp?.Value.ToFloats().ToArray());
 
             } 
@@ -201,7 +216,7 @@
         var Resp = ModentaAgente.embeddingClient?.GenerateEmbedding(Rag.Texto);
         Rag.EmbeddingTexto = new Pgvector.Vector(Resp?.Value.ToFloats().ToArray());
 
-        Resp = ModentaAgente.embeddingClient?.GenerateEmbedding(Rag.PalavrasChave.ToString());
+        Resp = ModentaAgente.embeddingClient?.GenerateEmbedding(string.Join(", ", Rag.PalavrasChave ?? Array.Empty<string>()));
         Rag.EmbeddingPalavrasChave = new Pgvector.Vector(Resp?.Value.ToFloats().ToArray());
 
         try
