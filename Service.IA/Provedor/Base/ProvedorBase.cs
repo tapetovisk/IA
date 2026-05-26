@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.AI;
 using OpenAI;
+using OpenAI.Embeddings;
 using Service.IA.Model;
 using System.ClientModel;
 using System.ComponentModel;
@@ -9,6 +10,7 @@ namespace Service.IA.Provedor.Base
     public class ProvedorBase : IProvedorBase
     {
         public OpenAIClient? openAIClient { get; set; } = null;
+        public EmbeddingClient? embeddingClient { get; set; } = null;
         public HttpClient _httpClient { get; set; } = new HttpClient();
         public virtual string UrlPadrao { get; set; } = "";
         public virtual string TagKey { get; set; } = "Authorization";
@@ -45,8 +47,7 @@ namespace Service.IA.Provedor.Base
                 if (TagKey == "Authorization" || string.IsNullOrEmpty(apiKey.Item1))
                 {
                     _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey.Item2);
-                }
-                else
+                } else
                 {
                     _httpClient.DefaultRequestHeaders.Add(apiKey.Item1, apiKey.Item2);
                 }
@@ -97,7 +98,15 @@ namespace Service.IA.Provedor.Base
                         Endpoint = new Uri(this.url)
                     }
                 );
+
             return openAIClient;
+        }
+
+        public virtual void SetEmbeddingClient(string model)
+        {
+            if (openAIClient == null) return;
+            if (string.IsNullOrEmpty(model)) return;
+            embeddingClient = openAIClient.GetEmbeddingClient(model);
         }
 
         public async virtual Task<List<Modelos>> ModeloPadrao() => await Task.FromResult(new List<Modelos>());

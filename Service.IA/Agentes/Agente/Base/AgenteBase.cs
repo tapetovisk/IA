@@ -78,6 +78,7 @@ namespace Service.IA.Agentes.Agente.Base
             Description = Descricao,
             ChatOptions = chat
         });
+
         [Description("Cria um agente de chat com as configurações definidas")]
         public async Task<ChatClientAgent> SetAgentAsync(
             [Description("Client a ser utilizado pelo agente")] IChatClient client,

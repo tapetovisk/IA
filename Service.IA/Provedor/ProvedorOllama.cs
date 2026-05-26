@@ -37,20 +37,35 @@ namespace Service.IA.Provedor
         /// <returns>O <see cref="OpenAIClient"/> configurado para o Ollama.</returns>
         internal override OpenAIClient SetProvedor()
         {
+            openAIClient = SetProvedorOllama(url.TrimEnd('/') + "/v1");
+            return openAIClient;
+        }
+
+        private OpenAIClient SetProvedorOllama(string url)
+        {
             ApiKeyCredential credenciar;
 
             credenciar = string.IsNullOrEmpty(apiKey.Item2) ?
                 new ApiKeyCredential("local") :
                 new ApiKeyCredential(apiKey.Item2);
 
-            openAIClient = new OpenAIClient(
+            var openAIClientInter = new OpenAIClient(
                 credenciar,
                 new OpenAIClientOptions
                 {
                     Endpoint = new Uri(base.url.TrimEnd('/') + "/v1")
                 });
 
-            return openAIClient;
+            return openAIClientInter;
+        }
+
+        public override void SetEmbeddingClient(string model)
+        {
+            var openAIClientEmb = SetProvedorOllama(url.TrimEnd('/') + "/");
+
+            if (openAIClientEmb == null) return;
+            if (string.IsNullOrEmpty(model)) return;
+            embeddingClient = openAIClientEmb.GetEmbeddingClient(model);
         }
 
         [Description("Retorna um IChatClient para o modelo especificado a partir do openAIClient configurado.")]
@@ -66,7 +81,7 @@ namespace Service.IA.Provedor
         [Description("Retorna a lista de todos os modelos disponíveis no servidor Ollama via GET /api/models.")]
         public async Task<List<ModelosOllama>> GetListaModelos()
         {
-            var response = await _httpClient.GetAsync("api/tags");
+            var response = await _httpClient.GetAsync("v1/api/tags");
 
             if (response.IsSuccessStatusCode)
             {
@@ -81,7 +96,7 @@ namespace Service.IA.Provedor
         public async Task<ModeloDetalhe> GetDetalhesModelo(
             [Description("Nome do modelo para o qual os detalhes serão retornados.")] string model)
         {
-            var response = await _httpClient.PostAsync("/api/show", Conversor.ConvertJson(new { model }));
+            var response = await _httpClient.PostAsync("v1/api/show", Conversor.ConvertJson(new { model }));
 
             if (response.IsSuccessStatusCode)
             {
@@ -99,7 +114,7 @@ namespace Service.IA.Provedor
         {
             try
             {
-                var response = await _httpClient.PostAsync("/api/pull", Conversor.ConvertJson(new { model }));
+                var response = await _httpClient.PostAsync("v1/api/pull", Conversor.ConvertJson(new { model }));
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();
@@ -119,7 +134,7 @@ namespace Service.IA.Provedor
         {
             try
             {
-                var response = await _httpClient.PostAsync("/api/delete", Conversor.ConvertJson(new { model }));
+                var response = await _httpClient.PostAsync("v1/api/delete", Conversor.ConvertJson(new { model }));
                 if (response.IsSuccessStatusCode)
                 {
                     var content = await response.Content.ReadAsStringAsync();

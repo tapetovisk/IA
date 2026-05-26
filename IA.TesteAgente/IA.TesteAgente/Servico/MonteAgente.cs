@@ -2,6 +2,7 @@
 using IA.TesteAgente.Model;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
+using OpenAI.Embeddings;
 using Service.IA.Agentes.Agente;
 using Service.IA.Enum;
 using Service.IA.Provedor.Base;
@@ -12,6 +13,7 @@ namespace IA.TesteAgente.Servico
     public class MonteAgente(IDbContextFactory<dbContext> DbFactory, IServiceProvider _serviceProvider)
     {
         public Agente Agente { get; set; } = new();
+        public EmbeddingClient? embeddingClient { get; set; } = null;
 
         public async Task SetAgente(string idAgente)
         {
@@ -25,6 +27,12 @@ namespace IA.TesteAgente.Servico
             provedor.SetProvedor(provedorModel.Url, new Tuple<string, string>(provedorModel.TagKey, provedorModel.ApiKey), provedorModel.TimeoutMinutes);
             var ChatClient = provedor.SetMedolo(ModeloModel.Modelo);
 
+            if (ModeloModel.TipoModelo.Any(a => a == EnumTipoModelo.Embedding))
+            {
+                provedor.SetEmbeddingClient(ModeloModel.Modelo);
+                embeddingClient = provedor.embeddingClient;
+            }
+            
             Agente = new Agente();
 
             if (AgenteModel.Memoria) Agente.SetHistorico();
@@ -64,15 +72,13 @@ namespace IA.TesteAgente.Servico
                 if (ToolLocal == null) return;
 
                 Tool.Add(ToolLocal);
-            }
-            else if (Ferramenta.TipoFerramenta == EnumTipoFerramenta.MCPLocal)
+            } else if (Ferramenta.TipoFerramenta == EnumTipoFerramenta.MCPLocal)
             {
                 var ToolLocal = await new BuscaProvedor().CriarToolMCPLocal(Ferramenta.Nome, Ferramenta.Command, Ferramenta.JsonArguments);
                 if (ToolLocal == null) return;
                 Tool = ToolLocal.ToList();
 
-            }
-            else if (Ferramenta.TipoFerramenta == EnumTipoFerramenta.MCPHttp)
+            } else if (Ferramenta.TipoFerramenta == EnumTipoFerramenta.MCPHttp)
             {
                 var ToolLocal = await new BuscaProvedor().CriarToolHttp(Ferramenta.Url, Ferramenta.JsonArguments);
                 if (ToolLocal == null) return;

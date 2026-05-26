@@ -1,17 +1,16 @@
 ﻿@page "/cadastroRAG"
 @rendermode @(new InteractiveServerRenderMode(prerender: false))
 
+@using IA.TesteAgente.Components.Pages.Componente
 @using IA.TesteAgente.Model
 @using Microsoft.EntityFrameworkCore
 @using IA.TesteAgente.Data
 @using IA.TesteAgente.Servico
-@using Pgvector;
-@using OpenAI;
 
 @inject IDbContextFactory<dbContext> DbFactory
 @inject IServiceProvider _serviceProvider
 
-
+<Aguardando Aguarde="@Aguarde"></Aguardando>
 <h3>CadastroRAG</h3>
 
 <div class="row">
@@ -53,9 +52,11 @@
     public string Texto { get; set; } = "";
     public string Produto { get; set; } = "";
     public List<Rag> RagTexto { get; set; } = new();
+    public bool Aguarde { get; set; } = false;
 
-    async Task PreparaRag()
+        async Task PreparaRag()
     {
+        Aguarde = true;
         using var context = await DbFactory.CreateDbContextAsync();
         var AgenteMelhora = await context.AgenteIA.Where(a => a.Referencia == "PreparaRag").FirstAsync();
 
@@ -75,6 +76,7 @@
                 Texto = item.conteudo_para_vetorizacao
             });
         }
+        Aguarde = false;
     }
 
     async Task Cadastrar()
@@ -85,28 +87,13 @@
         var ModentaAgente = new MonteAgente(DbFactory, _serviceProvider);
         await ModentaAgente.SetAgente(AgenteEmbedding.id);
 
-        //// Inicializa o cliente (com API Key ou credencial)
-        //var client = new OpenAIClient(apiKey);
-        //
-        //// Cria o embedding
-        //var response = await client.Embeddings.CreateAsync(
-        //    model: "text-embedding-ada-002",
-        //    input: "Texto que você quer transformar em vetor"
-        //);
-        //
-        //// Resultado
-        //var embedding = response.Data[0].Embedding;
-
         foreach (var item in RagTexto)
         {
+            var Resp = ModentaAgente.embeddingClient?.GenerateEmbedding(item.Texto);
+            item.EmbeddingTexto = new Pgvector.Vector(Resp?.Value.ToFloats().ToArray());
 
-
-
-            var Resp = await ModentaAgente.Agente.RunAsync<Vector>(item.Texto);
-            item.EmbeddingTexto = Resp.Result;
-
-            Resp = await ModentaAgente.Agente.RunAsync<Vector>(item.PalavrasChave.ToString());
-            item.EmbeddingPalavrasChave = Resp.Result;
+            Resp = ModentaAgente.embeddingClient?.GenerateEmbedding(item.PalavrasChave.ToString());
+            item.EmbeddingPalavrasChave = new Pgvector.Vector(Resp?.Value.ToFloats().ToArray()); 
         }
         
         context.Rags.AddRange(RagTexto);

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.AI;
 using OpenAI;
+using OpenAI.Embeddings;
 using Service.IA.Model;
 
 namespace Service.IA.Provedor.Base
@@ -32,10 +33,13 @@ namespace Service.IA.Provedor.Base
         string TagKey { get; set; }
         int TimeoutMinutes { get; set; }
         string Descricao { get; set; }
+        EmbeddingClient? embeddingClient { get; set; }
 
         IProvedorBase SetProvedor(string url, Tuple<string, string> apiKey, int timeoutMinutes);
         IProvedorBase SetProvedor(string apiKey);
         IChatClient SetMedolo(string model);
         Task<List<Modelos>> ModeloPadrao();
+        void SetEmbeddingClient(string model);
+
     }
 }

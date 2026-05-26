@@ -182,7 +182,7 @@
 
     void Cadastro()
     {
-        var Model = LstProvedor.FirstOrDefault(f => f.id == idProvedor);
+        var Model = LstProvedor.FirstOrDefault(f => f.id == Modelo.IdProvedor);
         Modelo.ServicoProvedor = Model.ServicoProvedor;
 
         using var context = DbFactory.CreateDbContext();
