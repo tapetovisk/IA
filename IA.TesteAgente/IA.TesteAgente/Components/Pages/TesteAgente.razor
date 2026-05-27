@@ -1,0 +1,331 @@
+﻿@page "/testeAgente"
+@rendermode InteractiveServer
+
+@using Microsoft.EntityFrameworkCore
+@using IA.TesteAgente.Data
+@using IA.TesteAgente.Model
+@using IA.TesteAgente.Servico
+
+@inject IDbContextFactory<dbContext> DbFactory
+@inject IServiceProvider _serviceProvider
+
+<style>
+    .chat-container {
+        display: flex;
+        flex-direction: column;
+        height: 90vh;
+        max-width: 900px;
+        margin: 0 auto;
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        overflow: hidden;
+        background: #fff;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .chat-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        text-align: center;
+    }
+
+        .chat-header h3 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        background: #f8f9fa;
+    }
+
+    .message {
+        display: flex;
+        margin-bottom: 20px;
+        animation: fadeIn 0.3s ease-in;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .user-message {
+        justify-content: flex-end;
+    }
+
+    .assistant-message {
+        justify-content: flex-start;
+    }
+
+    .message-avatar {
+        font-size: 2rem;
+        margin: 0 10px;
+    }
+
+    .user-message .message-avatar {
+        order: 2;
+        color: #667eea;
+    }
+
+    .assistant-message .message-avatar {
+        color: #764ba2;
+    }
+
+    .message-content {
+        max-width: 70%;
+        background: white;
+        padding: 12px 16px;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .user-message .message-content {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .message-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+        font-size: 0.85rem;
+    }
+
+    .user-message .message-header {
+        color: rgba(255,255,255,0.9);
+    }
+
+    .message-time {
+        opacity: 0.7;
+        font-size: 0.75rem;
+    }
+
+    .message-text {
+        line-height: 1.5;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+
+    .typing-indicator {
+        display: flex;
+        gap: 5px;
+        padding: 10px;
+    }
+
+        .typing-indicator span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #667eea;
+            animation: typing 1.4s infinite;
+        }
+
+            .typing-indicator span:nth-child(2) {
+                animation-delay: 0.2s;
+            }
+
+            .typing-indicator span:nth-child(3) {
+                animation-delay: 0.4s;
+            }
+
+    @@keyframes typing {
+        0%, 60%, 100% {
+            transform: translateY(0);
+        }
+
+        30% {
+            transform: translateY(-10px);
+        }
+    }
+
+    .chat-input-container {
+        padding: 20px;
+        background: white;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .chat-input {
+        resize: none;
+        border-radius: 20px 0 0 20px !important;
+        border-right: none !important;
+    }
+
+    .input-group .btn {
+        border-radius: 0 20px 20px 0 !important;
+        padding: 0 20px;
+    }
+
+    .chat-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .config-panel {
+        padding: 15px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+</style>
+
+
+<Aguardando Aguarde="@Aguarde"></Aguardando>
+<h3>Teste Agente</h3>
+
+<div class="row">
+    <div class="col-12">
+
+        <div class="row">
+            <div class="col-12">
+                <select @bind="IdAgenteSelecionado" @bind:after="MontarAgente" class="form-control mb-12">
+                    <option value="">Selecione um agente</option>
+                    @foreach (var agente in ListAgente)
+                    {
+                        <option value="@agente.id">@agente.Nome</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-12">
+                <div class="chat-messages">
+                    @foreach (var mensagem in mensagens)
+                    {
+                        <div class="message @(mensagem.IsUser ? "user-message" : "assistant-message")">
+                            <div class="message-avatar">
+                                @if (mensagem.IsUser)
+                                {
+                                    <i class="bi bi-person-circle"></i>
+                                }
+                                else
+                                {
+                                    <i class="bi bi-robot"></i>
+                                }
+                            </div>
+                            <div class="message-content">
+                                <div class="message-header">
+                                    <strong>@(mensagem.IsUser ? "Você" : "Assistente")</strong>
+                                    <span class="message-time">@mensagem.Horario.ToString("HH:mm")</span>
+                                </div>
+                                <div class="message-text">@((MarkupString)mensagem.Texto)</div>
+                            </div>
+                        </div>
+                    }
+
+                    @if (processando)
+                    {
+                        <div class="message assistant-message">
+                            <div class="message-avatar">
+                                <i class="bi bi-robot"></i>
+                            </div>
+                            <div class="message-content">
+                                <div class="typing-indicator">
+                                    <span></span>
+                                    <span></span>
+                                    <span></span>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="col-12 row">
+
+                <div class="col-9" >
+                    <textarea class="form-control chat-input"
+                              placeholder="Digite sua mensagem..."
+                              @bind="mensagemUsuario"
+                              rows="1"
+                              disabled="@processando"></textarea>
+                </div>
+                <div class="col-3">
+                    <button class="btn btn-primary" @onclick="EnviarMensagem" disabled="@processando">Enviar</button>
+                    <button class="btn btn-primary" @onclick="LimparChat" disabled="@processando">Limpar</button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+@code {
+    public bool Aguarde { get; set; } = false;
+    public bool processando { get; set; } = false;
+    public List<AgenteIA> ListAgente { get; set; } = new();
+    public string IdAgenteSelecionado { get; set; } = string.Empty;
+    public MonteAgente MonteAgenteModel { get; set; } = null;
+    public string mensagemUsuario { get; set; } = string.Empty;
+    private List<ChatMensagem> mensagens = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Aguarde = true;
+        using var context = await DbFactory.CreateDbContextAsync();
+        ListAgente = await context.AgenteIA.ToListAsync();
+        Aguarde = false;
+    }
+
+    public async Task MontarAgente()
+    {
+        Aguarde = true;
+        using var context = await DbFactory.CreateDbContextAsync();
+
+        if (string.IsNullOrEmpty(IdAgenteSelecionado))
+        {
+            MonteAgenteModel = null;
+            return;
+        }
+
+        MonteAgenteModel = new MonteAgente(DbFactory, _serviceProvider);
+        await MonteAgenteModel.SetAgente(IdAgenteSelecionado);
+
+        Aguarde = false;
+    }
+
+    async Task EnviarMensagem()
+    {
+        if (string.IsNullOrWhiteSpace(mensagemUsuario) || MonteAgenteModel == null)
+            return;
+        var mensagem = mensagemUsuario.Trim();
+        mensagens.Add(new ChatMensagem { Texto = mensagem, IsUser = true, Horario = DateTime.Now });
+        mensagemUsuario = string.Empty;
+
+        processando = true;
+        var v = await MonteAgenteModel.Agente.RunAsync<string>(mensagem);
+        processando = false;
+
+        mensagens.Add(new ChatMensagem { Texto = v.Result, IsUser = false, Horario = DateTime.Now });
+    }
+
+    private void LimparChat()
+    {
+        mensagens.Clear();
+        MonteAgenteModel = null;
+        IdAgenteSelecionado = "";
+    }
+
+    private class ChatMensagem
+    {
+        public string Texto { get; set; } = string.Empty;
+        public bool IsUser { get; set; }
+        public DateTime Horario { get; set; }
+    }
+
+    private async Task OnAgenteChange(ChangeEventArgs e)
+    {
+        IdAgenteSelecionado = e.Value?.ToString() ?? string.Empty;
+        await MontarAgente();
+    }
+}

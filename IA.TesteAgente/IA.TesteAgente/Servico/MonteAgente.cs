@@ -1,5 +1,6 @@
 ﻿using IA.TesteAgente.Data;
 using IA.TesteAgente.Model;
+using IA.TesteAgente.Servico.RAG;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
 using OpenAI.Embeddings;
@@ -32,12 +33,14 @@ namespace IA.TesteAgente.Servico
                 provedor.SetEmbeddingClient(ModeloModel.Modelo);
                 embeddingClient = provedor.embeddingClient;
             }
-            
+
             Agente = new Agente();
 
             if (AgenteModel.Memoria) Agente.SetHistorico();
 
             await SetGuardRail(AgenteModel);
+            await SetRag(idAgente);
+            await SetSubAgente(idAgente);
 
             await Agente.SetAgentAsync(ChatClient, AgenteModel.Nome, AgenteModel.Descricao, ModeloModel.Modelo, AgenteModel.Instrucoes);
         }
@@ -48,13 +51,43 @@ namespace IA.TesteAgente.Servico
                 await SetFerramenta(AgenteModel.GuardRailEntrada);
 
             if (!string.IsNullOrEmpty(AgenteModel.idAgenteGuardRailEntrada))
-                await SetSubAgente(AgenteModel.idAgenteGuardRailEntrada);
+                await SetAgenteGuardRail(AgenteModel.idAgenteGuardRailEntrada);
 
             if (!string.IsNullOrEmpty(AgenteModel.GuardRailSaida))
                 await SetFerramenta(AgenteModel.GuardRailSaida);
 
             if (!string.IsNullOrEmpty(AgenteModel.idAgenteGuardRailSaida))
-                await SetSubAgente(AgenteModel.idAgenteGuardRailSaida);
+                await SetAgenteGuardRail(AgenteModel.idAgenteGuardRailSaida);
+        }
+
+        public async Task SetRelacao(string idAgente)
+        {
+            using var context = await DbFactory.CreateDbContextAsync();
+            var LstRelacao = context.Rel_Agente_Relacao.Where(a => a.idAgenteAi == idAgente).ToList();
+
+            foreach (var item in LstRelacao)
+            {
+                switch (item.Tabela)
+                {
+                    case "Agente":
+                        await SetSubAgente(item.idRelacao);
+                        break;
+
+                    case "RAG":
+                        await SetRag(item.idRelacao);
+                        break;
+
+                    case "Ferramentas":
+                        await SetFerramenta(item.idRelacao);
+                        break;
+
+                    case "Perguntas Resposta":
+                        await SetFerramenta(item.idRelacao);
+                        break;
+
+                    default: break;
+                }
+            }
         }
 
         public async Task SetFerramenta(string idFerramenta)
@@ -72,13 +105,15 @@ namespace IA.TesteAgente.Servico
                 if (ToolLocal == null) return;
 
                 Tool.Add(ToolLocal);
-            } else if (Ferramenta.TipoFerramenta == EnumTipoFerramenta.MCPLocal)
+            }
+            else if (Ferramenta.TipoFerramenta == EnumTipoFerramenta.MCPLocal)
             {
                 var ToolLocal = await new BuscaProvedor().CriarToolMCPLocal(Ferramenta.Nome, Ferramenta.Command, Ferramenta.JsonArguments);
                 if (ToolLocal == null) return;
                 Tool = ToolLocal.ToList();
 
-            } else if (Ferramenta.TipoFerramenta == EnumTipoFerramenta.MCPHttp)
+            }
+            else if (Ferramenta.TipoFerramenta == EnumTipoFerramenta.MCPHttp)
             {
                 var ToolLocal = await new BuscaProvedor().CriarToolHttp(Ferramenta.Url, Ferramenta.JsonArguments);
                 if (ToolLocal == null) return;
@@ -88,13 +123,28 @@ namespace IA.TesteAgente.Servico
             Agente.SetFuncao(Tool);
         }
 
-        public async Task SetSubAgente(string idAgente)
+        public async Task SetAgenteGuardRail(string idSubAgente) => await SetSubAgente(idSubAgente);
+
+        public async Task SetSubAgente(string idSubAgente)
         {
             var MonteAgenteSubAgente = new MonteAgente(DbFactory, _serviceProvider);
-            await MonteAgenteSubAgente.SetAgente(idAgente);
+            await MonteAgenteSubAgente.SetAgente(idSubAgente);
 
             if (MonteAgenteSubAgente?.Agente?.Agent == null) return;
             Agente.SetFuncao(MonteAgenteSubAgente.Agente.Agent);
         }
+
+        public async Task SetRag(string Produto)
+        {
+            var RagServico = new RagServico(DbFactory, _serviceProvider, Produto);
+            Agente.SetContextProvider(RagServico);
+        }
+
+        public async Task SetPerguntasResposta(string Produto)
+        {
+            var RagServico = new PerguntasRespostaRagSevice(DbFactory, _serviceProvider, Produto);
+            Agente.SetContextProvider(RagServico);
+        }
+
     }
 }

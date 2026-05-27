@@ -104,8 +104,15 @@
             .Select(a => new AgenteIA() { id = a.id, Nome = a.Nome })
             .ToListAsync();
 
-        var relacoes = await context.Rel_Agente_Relacao.ToListAsync();
+        await BuscaListaRelacao();
 
+        Aguarde = false;
+    }
+
+    public async Task BuscaListaRelacao()
+    {
+        using var context = await DbFactory.CreateDbContextAsync();
+        var relacoes = await context.Rel_Agente_Relacao.ToListAsync();
         var agentesDict = await context.AgenteIA.ToDictionaryAsync(a => a.id, a => a.Nome);
         var ferramentasDict = await context.Ferramentas.ToDictionaryAsync(f => f.id, f => f.Nome);
 
@@ -116,15 +123,13 @@
             Tabela = r.Tabela,
             NomeRelacao = r.Tabela switch
             {
-                "Agente"            => agentesDict.TryGetValue(r.idRelacao, out var na) ? na : r.idRelacao,
-                "Ferramentas"       => ferramentasDict.TryGetValue(r.idRelacao, out var nf) ? nf : r.idRelacao,
-                "RAG"               => r.idRelacao,
-                "Perguntas Resposta" =>r.idRelacao,
-                _                   => r.idRelacao
+                "Agente" => agentesDict.TryGetValue(r.idRelacao, out var na) ? na : r.idRelacao,
+                "Ferramentas" => ferramentasDict.TryGetValue(r.idRelacao, out var nf) ? nf : r.idRelacao,
+                "RAG" => r.idRelacao,
+                "Perguntas Resposta" => r.idRelacao,
+                _ => r.idRelacao
             }
         }).ToList();
-
-        Aguarde = false;
     }
 
     public async Task BuscaTabela()
