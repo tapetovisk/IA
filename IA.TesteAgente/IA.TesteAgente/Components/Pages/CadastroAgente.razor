@@ -10,6 +10,7 @@
 @inject IDbContextFactory<dbContext> DbFactory
 @inject IServiceProvider _serviceProvider
 
+<Aguardando Aguarde="@Aguarde"></Aguardando>
 <h3>Cadastro Agente</h3>
 
 <div class="row">
@@ -185,18 +186,22 @@
     public List<ModeloLLM> ListModeloAll { get; set; } = new();
     public List<Ferramentas> ListFerramentas { get; set; } = new();
     public bool Novo { get; set; } = true;
+    public bool Aguarde { get; set; } = false;
 
     protected override async Task OnInitializedAsync()
     {
+        Aguarde = true;
         using var context = await DbFactory.CreateDbContextAsync();
         ListAgente = await context.AgenteIA.ToListAsync();
         ListProvedor = await context.Provedor.ToListAsync();
         ListFerramentas = await context.Ferramentas.Where(s => s.TipoFerramenta == EnumTipoFerramenta.GuardRail).ToListAsync();
         ListModeloAll = context.ModeloLLM.ToList();
+        Aguarde = false;
     }
 
     private async Task Cadastro(EditContext args)
     {
+        Aguarde = true;
         using var context = await DbFactory.CreateDbContextAsync();
 
         if (Novo)
@@ -212,6 +217,7 @@
 
         Agente = new();
         Novo = true;
+        Aguarde = false;
     }
 
     public void SetProvedor()
@@ -234,15 +240,18 @@
 
     private async Task RemoveModelos(string id)
     {
+        Aguarde = true;
         using var context = await DbFactory.CreateDbContextAsync();
         var modeloRemove = await context.AgenteIA.FirstAsync(a => a.id == id);
         context.AgenteIA.Remove(modeloRemove);
         await context.SaveChangesAsync();
         ListAgente = await context.AgenteIA.ToListAsync();
+        Aguarde = false;
     }
 
     private async Task MelhoraPrompt()
     {
+        Aguarde = true;
         using var context = await DbFactory.CreateDbContextAsync();
         var AgenteMelhora = await context.AgenteIA.Where(a => a.Referencia == "MelhoraPrompt").FirstAsync();
 
@@ -252,5 +261,6 @@
         var v = await ModentaAgente.Agente.RunAsync<string>(Agente.Instrucoes);
 
         Agente.Instrucoes = v.Result;
+        Aguarde = false;
     }
 }

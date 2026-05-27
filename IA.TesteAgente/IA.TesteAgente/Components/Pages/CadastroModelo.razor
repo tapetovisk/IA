@@ -10,6 +10,7 @@
 @inject IDbContextFactory<dbContext> DbFactory
 @inject IServiceProvider _serviceProvider
 
+<Aguardando Aguarde="@Aguarde"></Aguardando>
 <h3>Cadastro Modelo</h3>
 
 <div class="row">
@@ -115,11 +116,14 @@
     public List<Provedor> LstProvedor { get; set; } = new();
     public bool Novo { get; set; } = true;
     public string idProvedor { get; set; }
+    public bool Aguarde { get; set; } = false;
 
     protected override void OnInitialized()
     {
+        Aguarde = true;
         BuscaProvedor();
         BuscaModelo();
+        Aguarde = false;
     }
 
     public void BuscaProvedor()
@@ -143,15 +147,18 @@
 
     void RemoveModelos(string IdModelo)
     {
+        Aguarde = true;
         using var context = DbFactory.CreateDbContext();
         var modelo = LstModelo.First(a => a.id == IdModelo);
         context.Remove(modelo);
         context.SaveChanges();
         BuscaModelo();
+        Aguarde = false;
     }
 
     public async Task BuscaModeloPadrao()
     {
+        Aguarde = true;
         var Model = LstProvedor.FirstOrDefault(f => f.id == idProvedor);
         using var context = DbFactory.CreateDbContext();
         context.RemoveRange(LstModelo.Where(a => a.IdProvedor == idProvedor));
@@ -178,10 +185,12 @@
 
             Cadastro();
         }
+        Aguarde = false;
     }
 
     void Cadastro()
     {
+        Aguarde = true;
         var Model = LstProvedor.FirstOrDefault(f => f.id == Modelo.IdProvedor);
         Modelo.ServicoProvedor = Model.ServicoProvedor;
 
@@ -197,6 +206,7 @@
         context.SaveChanges();
         Modelo = new();
         BuscaModelo();
+        Aguarde = false;
     }
 
     private void Cancelar()

@@ -8,6 +8,7 @@
 
 @inject IDbContextFactory<dbContext> DbFactory
 
+<Aguardando Aguarde="@Aguarde"></Aguardando>
 <h3>Cadastro Ferramenta</h3>
 
 <div class="row">
@@ -101,16 +102,20 @@
     public Ferramentas Modelo { get; set; } = new();
     public List<Ferramentas> ListTool { get; set; } = new();
     public bool Novo { get; set; } = true;
+    public bool Aguarde { get; set; } = false;
 
     protected override async Task OnInitializedAsync()
     {
+        Aguarde = true;
         using var context = await DbFactory.CreateDbContextAsync();
         ListTool = await context.Ferramentas.ToListAsync();
         await BuscaFerramentaSistema();
+        Aguarde = false;
     }
 
     private async Task Cadastro()
     {
+        Aguarde = true;
         using var context = await DbFactory.CreateDbContextAsync();
 
         if (Novo)
@@ -126,6 +131,7 @@
 
         Modelo = new();
         Novo = true;
+        Aguarde = false;
     }
 
     private void Cancelar()
@@ -142,11 +148,13 @@
 
     private async Task RemoveModelos(string id)
     {
+        Aguarde = true;
         using var context = await DbFactory.CreateDbContextAsync();
         var modeloRemove = await context.Ferramentas.FirstAsync(a => a.id == id);
         context.Ferramentas.Remove(modeloRemove);
         await context.SaveChangesAsync();
         ListTool = await context.Ferramentas.ToListAsync();
+        Aguarde = false;
     }
 
     private async Task BuscaFerramentaSistema()

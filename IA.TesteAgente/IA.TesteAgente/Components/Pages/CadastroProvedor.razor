@@ -10,6 +10,7 @@
 @inject IDbContextFactory<dbContext> DbFactory
 @inject IServiceProvider _serviceProvider
 
+<Aguardando Aguarde="@Aguarde"></Aguardando>
 <h3>Cadastro Provedor</h3>
 
 <div class="row">
@@ -107,11 +108,14 @@
     public List<Provedor> LstProvedor { get; set; } = new ();
     public string resp { get; set; } = "";
     public bool Novo { get; set; } = true;
+    public bool Aguarde { get; set; } = false;
 
     protected override void OnInitialized()
     {
+        Aguarde = true;
         BuscaProvedor();
         CarregaPadrao();
+        Aguarde = false;
     }
 
     public void BuscaProvedor()
@@ -130,15 +134,18 @@
 
     public void CarregaPadrao()
     {
+        Aguarde = true;
         var provedor = _serviceProvider.GetRequiredKeyedService<IProvedorBase>(Provedor.ServicoProvedor);
         Provedor.Url = provedor.UrlPadrao;
         Provedor.TagKey = provedor.TagKey;
         Provedor.TimeoutMinutes = provedor.TimeoutMinutes;
         Provedor.Descicao = provedor.Descricao;
+        Aguarde = false;
     }
 
     private async Task Cadastro()
     {
+        Aguarde = true;
         using var context = DbFactory.CreateDbContext();
 
         if (Novo)
@@ -155,6 +162,7 @@
         Novo = true;
         CarregaPadrao();
         mensagemSucesso = true;
+        Aguarde = false;
     }
 
     private void Cancelar()
