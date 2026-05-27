@@ -12,10 +12,7 @@ namespace IA.TesteAgente.Data
         public DbSet<PerguntasResposta> PerguntasRespostas { get; set; }
         public DbSet<Provedor> Provedor { get; set; }
         public DbSet<Rags> Rags { get; set; }
-        public DbSet<Rel_Agente_Ferramentas> Rel_Agente_Ferramentas { get; set; }
-        public DbSet<Rel_Agente_PerguntasResposta> Rel_Agente_PerguntasResposta { get; set; }
-        public DbSet<Rel_Agente_Rag> Rel_Agente_Rag { get; set; }
-        public DbSet<Rel_Agente_SubAgente> Rel_Agente_SubAgente { get; set; }
+        public DbSet<Rel_Agente_Relacao> Rel_Agente_Relacao { get; set; }
 
         public dbContext()
         {

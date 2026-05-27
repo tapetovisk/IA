@@ -1,0 +1,182 @@
+﻿@page "/cadastroRelacaoAgente"
+@rendermode InteractiveServer
+
+@using Microsoft.EntityFrameworkCore
+@using IA.TesteAgente.Data
+@using IA.TesteAgente.Model
+
+@inject IDbContextFactory<dbContext> DbFactory
+
+<Aguardando Aguarde="@Aguarde"></Aguardando>
+<h3>Cadastro Agente Relação</h3>
+
+<div class="row">
+
+    <div class="col-6">
+
+        <table id="virtualized-table" class="col-12">
+            <thead style="position: sticky; top: 0; background-color: silver">
+                <tr>
+                    <th class="col-3">Agente</th>
+                    <th class="col-3">Tabela</th>
+                    <th class="col-3">Relação</th>
+                    <th class="col-3"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <Virtualize Items="LstAgenteRelacao" ItemSize="10" SpacerElement="tr">
+                    <tr @key="context.id" style="height: 30px;" id="row-@context.id">
+                        <td class="col-3">@context.NomeAgente</td>
+                        <td class="col-3">@context.Tabela</td>
+                        <td class="col-3">@context.NomeRelacao</td>
+                        <td class="col-3">
+                            @* <button @onclick="@(() => EditaModelo(context.id))">Editar</button> &ensp;&ensp;
+                            <button @onclick="@(() => RemoveModelos(context.id))">Remover</button> *@
+                        </td>
+                    </tr>
+                </Virtualize>
+            </tbody>
+        </table>
+
+    </div>
+
+    <div class="col-6">
+
+        <EditForm Model="RelAgenteRelacao" OnValidSubmit="Cadastro" FormName="CadastroRelacaoAgente">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="mb-12">
+                Agente:
+                <InputSelect class="form-control mb-12" @bind-Value="RelAgenteRelacao.idAgenteAi">
+                    <option value="">Selecione um agente</option>
+                    @foreach (var agente in LstAgente)
+                    {
+                        <option value="@agente.id">@agente.Nome</option>
+                    }
+                </InputSelect>
+            </div>
+
+            <div class="mb-12">
+                Tabela:
+                <InputSelect class="form-control mb-12" @bind-Value="RelAgenteRelacao.Tabela" @onblur="BuscaTabela">
+                    <option value="">Selecione um Tabela</option>
+                    <option value="Agente">Agente</option>
+                    <option value="Ferramentas">Ferramentas</option>
+                    <option value="RAG">RAG</option>
+                    <option value="Perguntas Resposta">Perguntas Resposta</option>
+                </InputSelect>
+            </div>
+
+            <div class="mb-12">
+                Relação:
+                <InputSelect class="form-control mb-12" @bind-Value="RelAgenteRelacao.idRelacao">
+                    <option value="">Selecione um Relação</option>
+                    @foreach (var agente in LstRelacao)
+                    {
+                        <option value="@agente.Id">@agente.Nome</option>
+                    }
+                </InputSelect>
+            </div>
+
+            <div>
+                <button type="submit" class="btn btn-primary">Salvar</button>
+                <button type="button" class="btn btn-secondary" @onclick="Cancelar">Cancelar</button>
+            </div>
+
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    public List<AgenteIA> LstAgente { get; set; } = new();
+    public List<Relacao> LstRelacao { get; set; } = new();
+    public bool Aguarde { get; set; } = false;
+    public Rel_Agente_Relacao RelAgenteRelacao { get; set; } = new();
+    public List<RelAgenteRelacaoView> LstAgenteRelacao { get; set; } = new();
+
+    protected async override Task OnInitializedAsync()
+    {
+        Aguarde = true;
+        using var context = await DbFactory.CreateDbContextAsync();
+
+        LstAgente = await context.AgenteIA
+            .Select(a => new AgenteIA() { id = a.id, Nome = a.Nome })
+            .ToListAsync();
+
+        var relacoes = await context.Rel_Agente_Relacao.ToListAsync();
+
+        var agentesDict = await context.AgenteIA.ToDictionaryAsync(a => a.id, a => a.Nome);
+        var ferramentasDict = await context.Ferramentas.ToDictionaryAsync(f => f.id, f => f.Nome);
+
+        LstAgenteRelacao = relacoes.Select(r => new RelAgenteRelacaoView
+        {
+            id = r.id,
+            NomeAgente = agentesDict.TryGetValue(r.idAgenteAi, out var nomeAgente) ? nomeAgente : r.idAgenteAi,
+            Tabela = r.Tabela,
+            NomeRelacao = r.Tabela switch
+            {
+                "Agente"            => agentesDict.TryGetValue(r.idRelacao, out var na) ? na : r.idRelacao,
+                "Ferramentas"       => ferramentasDict.TryGetValue(r.idRelacao, out var nf) ? nf : r.idRelacao,
+                "RAG"               => r.idRelacao,
+                "Perguntas Resposta" =>r.idRelacao,
+                _                   => r.idRelacao
+            }
+        }).ToList();
+
+        Aguarde = false;
+    }
+
+    public async Task BuscaTabela()
+    {
+        Aguarde = true;
+        using var context = await DbFactory.CreateDbContextAsync();
+
+        switch (RelAgenteRelacao.Tabela)
+        {
+            case "Agente":
+                LstRelacao = await context.AgenteIA.Select(a => new Relacao() { Id = a.id, Nome = a.Nome }).ToListAsync();
+                break;
+            case "Ferramentas":
+                LstRelacao = await context.Ferramentas.Select(a => new Relacao() { Id = a.id, Nome = a.Nome }).ToListAsync();
+                break;
+            case "RAG":
+                LstRelacao = await context.Rags.GroupBy(s => s.Produto).Select(a => new Relacao() { Id = a.Key, Nome = a.Key }).ToListAsync();
+                break;
+            case "Perguntas Resposta":
+                LstRelacao = await context.PerguntasRespostas.GroupBy(s => s.Produto).Select(a => new Relacao() { Id = a.Key, Nome = a.Key }).ToListAsync();
+                break;
+
+            default: break;
+        }
+
+        Aguarde = false;
+    }
+
+    private void Cadastro()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Rel_Agente_Relacao.Add(RelAgenteRelacao);
+        context.SaveChanges();
+        RelAgenteRelacao = new();
+    }
+
+    private void Cancelar()
+    {
+        RelAgenteRelacao = new();
+    }
+
+    public class Relacao
+    {
+        public string Id { get; set; } = "";
+        public string Nome { get; set; } = "";
+    }
+
+    public class RelAgenteRelacaoView
+    {
+        public string id { get; set; } = "";
+        public string NomeAgente { get; set; } = "";
+        public string Tabela { get; set; } = "";
+        public string NomeRelacao { get; set; } = "";
+    }
+}
