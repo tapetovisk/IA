@@ -1,5 +1,4 @@
-﻿using Anthropic.Models.Beta.Sessions;
-using IA.TesteAgente.Data;
+﻿using IA.TesteAgente.Data;
 using IA.TesteAgente.Model;
 using Microsoft.Agents.AI;
 using Microsoft.EntityFrameworkCore;
