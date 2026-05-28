@@ -47,6 +47,20 @@ namespace IA.TesteAgente.Servico
                 Data = DateTime.UtcNow
             }).ToList();
 
+            var todasAsMensagensSystem = context.ResponseMessages.LastOrDefault();
+
+            if(todasAsMensagensSystem != null)
+            {
+                entitiesToSave.Add(new Messagem
+                {
+                    idSessao = sessionId,
+                    idAgente = IdAgente,
+                    role = todasAsMensagensSystem?.Role.Value,
+                    content = todasAsMensagensSystem?.Text ?? string.Empty,
+                    Data = DateTime.UtcNow
+                });
+            }
+
             await BDcontext.Messagem.AddRangeAsync(entitiesToSave, cancellationToken);
             await BDcontext.SaveChangesAsync(cancellationToken);
         }
