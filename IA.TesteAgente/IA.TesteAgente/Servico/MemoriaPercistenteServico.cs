@@ -3,6 +3,7 @@ using IA.TesteAgente.Model;
 using Microsoft.Agents.AI;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
+using System.Text.Json;
 
 namespace IA.TesteAgente.Servico
 {
@@ -51,12 +52,21 @@ namespace IA.TesteAgente.Servico
 
             if(todasAsMensagensSystem != null)
             {
+                var Texto = "";
+                if (todasAsMensagensSystem.Text.IndexOf("data") >= 0)
+                {
+                    using var doc = JsonDocument.Parse(todasAsMensagensSystem.Text);
+                    Texto = doc.RootElement.GetProperty("data").GetString();
+                }
+                else
+                    Texto = todasAsMensagensSystem.Text;
+                
                 entitiesToSave.Add(new Messagem
                 {
                     idSessao = sessionId,
                     idAgente = IdAgente,
                     role = todasAsMensagensSystem?.Role.Value,
-                    content = todasAsMensagensSystem?.Text ?? string.Empty,
+                    content = Texto ?? string.Empty,
                     Data = DateTime.UtcNow
                 });
             }
