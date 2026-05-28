@@ -2,6 +2,7 @@
 using IA.TesteAgente.Model;
 using IA.TesteAgente.Servico.RAG;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.AI;
 using OpenAI.Embeddings;
 using Service.IA.Agentes.Agente;
@@ -36,11 +37,15 @@ namespace IA.TesteAgente.Servico
 
             Agente = new Agente();
 
-            if (AgenteModel.Memoria) Agente.SetHistorico();
+            if (AgenteModel.Memoria)
+            {
+                var Se = await Agente.GetSession();
+                var Memo = new MemoriaPercistenteServico(DbFactory);
+                Agente.SetHistorico(Memo);
+            }
 
             await SetGuardRail(AgenteModel);
-            await SetRag(idAgente);
-            await SetSubAgente(idAgente);
+            await SetRelacao(idAgente);
 
             await Agente.SetAgentAsync(ChatClient, AgenteModel.Nome, AgenteModel.Descricao, ModeloModel.Modelo, AgenteModel.Instrucoes);
         }
