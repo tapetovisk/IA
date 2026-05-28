@@ -2,7 +2,6 @@
 using IA.TesteAgente.Model;
 using IA.TesteAgente.Servico.RAG;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.AI;
 using OpenAI.Embeddings;
 using Service.IA.Agentes.Agente;
@@ -15,9 +14,10 @@ namespace IA.TesteAgente.Servico
     public class MonteAgente(IDbContextFactory<dbContext> DbFactory, IServiceProvider _serviceProvider)
     {
         public Agente Agente { get; set; } = new();
+        public string idSessao { get; set; } = "";
         public EmbeddingClient? embeddingClient { get; set; } = null;
 
-        public async Task SetAgente(string idAgente)
+        public async Task SetAgente(string idAgente, string SessaoID = "")
         {
             using var context = await DbFactory.CreateDbContextAsync();
 
@@ -39,8 +39,8 @@ namespace IA.TesteAgente.Servico
 
             if (AgenteModel.Memoria)
             {
-                var Se = await Agente.GetSession();
-                var Memo = new MemoriaPercistenteServico(DbFactory);
+                idSessao = string.IsNullOrEmpty(SessaoID) ? Guid.NewGuid().ToString() : SessaoID;
+                var Memo = new MemoriaPercistenteServico(DbFactory, idAgente, idSessao);
                 Agente.SetHistorico(Memo);
             }
 

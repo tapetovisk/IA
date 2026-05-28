@@ -6,12 +6,12 @@ using Microsoft.Extensions.AI;
 
 namespace IA.TesteAgente.Servico
 {
-    public class MemoriaPercistenteServico(IDbContextFactory<dbContext> _dbContextFactory) : ChatHistoryProvider
+    public class MemoriaPercistenteServico(IDbContextFactory<dbContext> _dbContextFactory, string IdAgente, string IdSessao) : ChatHistoryProvider
     {
         protected override async ValueTask<IEnumerable<ChatMessage>> ProvideChatHistoryAsync(InvokingContext context, CancellationToken cancellationToken = default)
         {
             ChatClientAgentSession typedSession = (ChatClientAgentSession)context.Session;
-            string sessionId = typedSession.ConversationId;
+            string sessionId = IdSessao;
 
             using var BDcontext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
@@ -33,20 +33,20 @@ namespace IA.TesteAgente.Servico
 
             if (todasAsMensagensDaSessao == null || !todasAsMensagensDaSessao.Any()) return;
 
-            string sessionId = typedSession.ConversationId;
+            string sessionId = IdSessao;
 
             using var BDcontext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
-            int mensagensJaSalvas = await BDcontext.Messagem.CountAsync(m => m.idSessao == sessionId);
-            var novasMensagens = todasAsMensagensDaSessao.Skip(mensagensJaSalvas).ToList();
+            var novasMensagens = todasAsMensagensDaSessao.ToList();
 
             var entitiesToSave = novasMensagens.Select(m => new Messagem
             {
                 idSessao = sessionId,
+                idAgente = IdAgente,
                 role = m.Role.Value,
                 content = m.Text ?? string.Empty,
                 Data = DateTime.UtcNow
-            });
+            }).ToList();
 
             await BDcontext.Messagem.AddRangeAsync(entitiesToSave, cancellationToken);
             await BDcontext.SaveChangesAsync(cancellationToken);
