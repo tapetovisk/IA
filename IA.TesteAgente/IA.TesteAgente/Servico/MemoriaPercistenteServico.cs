@@ -38,7 +38,6 @@ namespace IA.TesteAgente.Servico
             using var BDcontext = await _dbContextFactory.CreateDbContextAsync(cancellationToken);
 
             var novasMensagens = todasAsMensagensDaSessao.ToList();
-
             var entitiesToSave = novasMensagens.Select(m => new Messagem
             {
                 idSessao = sessionId,
