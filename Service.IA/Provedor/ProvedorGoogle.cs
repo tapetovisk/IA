@@ -1,4 +1,6 @@
 using Microsoft.Extensions.AI;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 using Service.IA.Enum;
 using Service.IA.Model;
 using Service.IA.Provedor.Base;
@@ -20,8 +22,19 @@ namespace Service.IA.Provedor
         {
             if (openAIClient == null) return null;
             if (string.IsNullOrEmpty(model)) return null;
-        
-            return new GeminiChatClient(apiKey.Item2, model);
+
+            var builder = Kernel.CreateBuilder();
+            builder.AddGoogleAIGeminiChatCompletion(
+                modelId: model,
+                apiKey: apiKey.Item2
+            );
+
+            var kernel = builder.Build();
+            var chatService = kernel.GetRequiredService<IChatCompletionService>();
+
+            //return chatService.AsChatClient();
+            //return new GeminiChatClient(apiKey.Item2, model);
+            return new GeminiChatClientKernel(apiKey.Item2, model);
         }
 
         public async override Task<List<Modelos>> ModeloPadrao() => new List<Modelos>()

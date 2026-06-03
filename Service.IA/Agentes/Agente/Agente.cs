@@ -134,11 +134,16 @@ namespace Service.IA.Agentes.Agente
                 }
                 catch (Exception ex)
                 {
-                    var doc = JsonDocument.Parse(Response.Text);
-                    responseString = doc.RootElement
-                                        .GetProperty("properties")
-                                        .GetProperty("data")
-                                        .GetString();
+                    if (Response.Text.IndexOf("properties") > 0 || Response.Text.IndexOf("data") > 0)
+                    {
+                        var doc = JsonDocument.Parse(Response.Text);
+                        responseString = doc.RootElement
+                                            .GetProperty("properties")
+                                            .GetProperty("data")
+                                            .GetString();
+                    }
+
+                    responseString = Response.Text;
                 }
 
                 if (GuardRailOut != null) if (!GuardRailOut(responseString)) return null;

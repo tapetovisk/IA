@@ -324,11 +324,18 @@
         }
         catch (Exception ex)
         {
-            var doc = JsonDocument.Parse(v.Text);
-            responseString = doc.RootElement
-                                .GetProperty("properties")
-                                .GetProperty("data")
-                                .GetString();
+            if (v.Text.IndexOf("properties") > 0 || v.Text.IndexOf("data") > 0)
+            {
+                var doc = JsonDocument.Parse(v.Text);
+                responseString = doc.RootElement
+                                    .GetProperty("properties")
+                                    .GetProperty("data")
+                                    .GetString();
+            }
+            else
+            {
+                responseString = v.Text;
+            }
         }
 
         mensagens.Add(new ChatMensagemModel { Texto = responseString, IsUser = false, Horario = DateTime.Now });
