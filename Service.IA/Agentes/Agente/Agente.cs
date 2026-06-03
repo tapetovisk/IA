@@ -2,6 +2,7 @@
 using Microsoft.Extensions.AI;
 using Service.IA.Agentes.Agente.Base;
 using Service.IA.Agentes.Skill;
+using System.Text.Json;
 
 namespace Service.IA.Agentes.Agente
 {
@@ -21,10 +22,11 @@ namespace Service.IA.Agentes.Agente
             Session = await Agent.CreateSessionAsync();
             return Session;
         }
-        public void LimpaSession() {
+        public void LimpaSession()
+        {
             Session?.SetInMemoryChatHistory(new List<ChatMessage>());
             Session = null;
-        } 
+        }
         public void SetSession(AgentSession session) => Session = session;
         public void SetSession(List<ChatMessage> msg) => Session?.SetInMemoryChatHistory(msg);
 
@@ -79,13 +81,28 @@ namespace Service.IA.Agentes.Agente
             var prompt = $"{Prompt}";
             var Response = await Agent.RunAsync<T>(prompt, Session);
 
-            if (Response != null && Response.Result != null)
+            if (Response != null)
             {
-                if (GuardRailOut != null) if (!GuardRailOut(Response.Result?.ToString())) return null;
+                var responseString = string.Empty;
+
+                try
+                {
+                    responseString = Response.Result?.ToString() ?? string.Empty;
+                }
+                catch (Exception ex)
+                {
+                    var doc = JsonDocument.Parse(Response.Text);
+                    responseString = doc.RootElement
+                                        .GetProperty("properties")
+                                        .GetProperty("data")
+                                        .GetString();
+                }
+
+                if (GuardRailOut != null) if (!GuardRailOut(responseString)) return null;
 
                 if (AgentGuardRailOut != null)
                 {
-                    var responseGuardRailOut = await AgentGuardRailOut.RunAsync<bool>(Response.Result.ToString());
+                    var responseGuardRailOut = await AgentGuardRailOut.RunAsync<bool>(responseString);
                     if (!responseGuardRailOut.Result) return null;
                 }
             }
@@ -107,13 +124,28 @@ namespace Service.IA.Agentes.Agente
 
             var Response = await Agent.RunAsync<T>(message, Session);
 
-            if (Response != null && Response.Result != null)
+            if (Response != null)
             {
-                if (GuardRailOut != null) if (!GuardRailOut(Response.Result?.ToString())) return null;
+                var responseString = string.Empty;
+
+                try
+                {
+                    responseString = Response.Result?.ToString() ?? string.Empty;
+                }
+                catch (Exception ex)
+                {
+                    var doc = JsonDocument.Parse(Response.Text);
+                    responseString = doc.RootElement
+                                        .GetProperty("properties")
+                                        .GetProperty("data")
+                                        .GetString();
+                }
+
+                if (GuardRailOut != null) if (!GuardRailOut(responseString)) return null;
 
                 if (AgentGuardRailOut != null)
                 {
-                    var responseGuardRailOut = await AgentGuardRailOut.RunAsync<bool>(Response.Result.ToString());
+                    var responseGuardRailOut = await AgentGuardRailOut.RunAsync<bool>(responseString);
                     if (!responseGuardRailOut.Result) return null;
                 }
             }

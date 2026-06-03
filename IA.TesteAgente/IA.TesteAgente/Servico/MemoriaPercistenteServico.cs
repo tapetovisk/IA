@@ -50,17 +50,23 @@ namespace IA.TesteAgente.Servico
 
             var todasAsMensagensSystem = context.ResponseMessages.LastOrDefault();
 
-            if(todasAsMensagensSystem != null)
+            if (todasAsMensagensSystem != null)
             {
                 var Texto = "";
-                if (todasAsMensagensSystem.Text.IndexOf("data") >= 0)
+
+                try
                 {
-                    using var doc = JsonDocument.Parse(todasAsMensagensSystem.Text);
-                    Texto = doc.RootElement.GetProperty("data").GetString();
+                    if (todasAsMensagensSystem.Text.IndexOf("data") >= 0)
+                    {
+                        using var doc = JsonDocument.Parse(todasAsMensagensSystem.Text);
+                        Texto = doc.RootElement.GetProperty("data").GetString();
+                    }
                 }
-                else
+                catch
+                {
                     Texto = todasAsMensagensSystem.Text;
-                
+                }
+
                 entitiesToSave.Add(new Messagem
                 {
                     idSessao = sessionId,

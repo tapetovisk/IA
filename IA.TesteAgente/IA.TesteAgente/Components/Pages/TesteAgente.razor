@@ -5,6 +5,7 @@
 @using IA.TesteAgente.Data
 @using IA.TesteAgente.Model
 @using IA.TesteAgente.Servico
+@using System.Text.Json;
 @using Microsoft.Extensions.AI;
 
 @inject IDbContextFactory<dbContext> DbFactory
@@ -268,7 +269,7 @@
     public string IdAgenteSelecionado { get; set; } = string.Empty;
     public MonteAgente MonteAgenteModel { get; set; } = null;
     public string mensagemUsuario { get; set; } = string.Empty;
-    private List<ChatMensagem> mensagens = new();
+    private List<ChatMensagemModel> mensagens = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -300,14 +301,37 @@
         if (string.IsNullOrWhiteSpace(mensagemUsuario) || MonteAgenteModel == null)
             return;
         var mensagem = mensagemUsuario.Trim();
-        mensagens.Add(new ChatMensagem { Texto = mensagem, IsUser = true, Horario = DateTime.Now });
+        mensagens.Add(new ChatMensagemModel { Texto = mensagem, IsUser = true, Horario = DateTime.Now });
         mensagemUsuario = string.Empty;
 
+        ChatMessage chat = new ChatMessage
+        {
+            Role = ChatRole.User,
+            Contents = new List<AIContent> { 
+                new TextContent(mensagem)
+            }
+        };
+
         processando = true;
-        var v = await MonteAgenteModel.Agente.RunAsync<string>(mensagem);
+        var v = await MonteAgenteModel.Agente.RunAsync<string>(chat);
         processando = false;
 
-        mensagens.Add(new ChatMensagem { Texto = v.Result, IsUser = false, Horario = DateTime.Now });
+        var responseString = string.Empty;
+
+        try
+        {
+            responseString = v.Result?.ToString() ?? string.Empty;
+        }
+        catch (Exception ex)
+        {
+            var doc = JsonDocument.Parse(v.Text);
+            responseString = doc.RootElement
+                                .GetProperty("properties")
+                                .GetProperty("data")
+                                .GetString();
+        }
+
+        mensagens.Add(new ChatMensagemModel { Texto = responseString, IsUser = false, Horario = DateTime.Now });
     }
 
     private void LimparChat()
@@ -317,7 +341,7 @@
         IdAgenteSelecionado = "";
     }
 
-    private class ChatMensagem
+    private class ChatMensagemModel
     {
         public string Texto { get; set; } = string.Empty;
         public bool IsUser { get; set; }

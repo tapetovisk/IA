@@ -1,7 +1,10 @@
+using Microsoft.Extensions.AI;
 using Service.IA.Enum;
 using Service.IA.Model;
 using Service.IA.Provedor.Base;
 using Service.IA.Provedor.Interface;
+using Service.IA.Provedor.ProvedorPersonalizado;
+using System.ComponentModel;
 
 namespace Service.IA.Provedor
 {
@@ -9,7 +12,17 @@ namespace Service.IA.Provedor
     {
         public override string Descricao { get; set; } = "Google";
         public override string UrlPadrao { get; set; } = "https://generativelanguage.googleapis.com/v1beta/openai/";
-        public override string TagKey { get; set; } = "Authorization";
+        public override string TagKey { get; set; } = "X-goog-api-key";
+
+        [Description("Retorna um IChatClient para o modelo especificado a partir do openAIClient configurado.")]
+        public override IChatClient SetMedolo(
+           [Description("Identificador do modelo de linguagem (ex.: \"gpt-4o\", \"llama3\").")] string model)
+        {
+            if (openAIClient == null) return null;
+            if (string.IsNullOrEmpty(model)) return null;
+        
+            return new GeminiChatClient(apiKey.Item2, model);
+        }
 
         public async override Task<List<Modelos>> ModeloPadrao() => new List<Modelos>()
         {
