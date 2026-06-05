@@ -13,6 +13,7 @@ namespace IA.TesteAgente.Data
         public DbSet<Provedor> Provedor { get; set; }
         public DbSet<Rags> Rags { get; set; }
         public DbSet<Rel_Agente_Relacao> Rel_Agente_Relacao { get; set; }
+        public DbSet<Consumo> Consumo { get; set; }
 
         public dbContext()
         {

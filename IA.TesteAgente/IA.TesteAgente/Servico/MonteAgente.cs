@@ -16,6 +16,7 @@ namespace IA.TesteAgente.Servico
         public Agente Agente { get; set; } = new();
         public string idSessao { get; set; } = "";
         public EmbeddingClient? embeddingClient { get; set; } = null;
+        public Consumo Consumo { get; set; } = new ();
 
         public async Task SetAgente(string idAgente, string SessaoID = "")
         {
@@ -37,9 +38,15 @@ namespace IA.TesteAgente.Servico
 
             Agente = new Agente();
 
+            idSessao = string.IsNullOrEmpty(SessaoID) ? Guid.NewGuid().ToString() : SessaoID;
+
+            Consumo.idProvedor = AgenteModel.idProvedor;
+            Consumo.idModeloLLM = AgenteModel.idModeloLLM;
+            Consumo.idAgenteIa = idAgente;
+            Consumo.Sessao = idSessao;
+
             if (AgenteModel.Memoria)
             {
-                idSessao = string.IsNullOrEmpty(SessaoID) ? Guid.NewGuid().ToString() : SessaoID;
                 var Memo = new MemoriaPercistenteServico(DbFactory, idAgente, idSessao);
                 Agente.SetHistorico(Memo);
             }

@@ -334,6 +334,8 @@
         var v = await MonteAgenteModel.Agente.RunAsync<string>(chat);
         processando = false;
 
+        await SaveConsumo();
+
         var responseString = string.Empty;
 
         try
@@ -357,6 +359,25 @@
         }
 
         mensagens.Add(new ChatMensagemModel { Texto = responseString, IsUser = false, Horario = DateTime.Now });
+    }
+
+    private async Task SaveConsumo()
+    {
+        bool existe = true;
+        using var context = await DbFactory.CreateDbContextAsync();
+
+        var Com = context.Consumo.Where(a => a.Sessao == MonteAgenteModel.Consumo.Sessao).FirstOrDefault();
+        if (Com == null){
+            Com = MonteAgenteModel.Consumo;
+            existe = false;
+        }
+
+        Com.TokenEntrada += MonteAgenteModel.Agente.Consumo.TokenEntrada;
+        Com.TokenSaida += MonteAgenteModel.Agente.Consumo.TokenSaida;
+        Com.TokenTotal += MonteAgenteModel.Agente.Consumo.TokenTotal;
+        
+        var c = existe ? context.Consumo.Update(Com) : context.Consumo.Add(Com);
+        context.SaveChanges();
     }
 
     private void LimparChat()

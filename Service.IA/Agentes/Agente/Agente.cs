@@ -2,12 +2,14 @@
 using Microsoft.Extensions.AI;
 using Service.IA.Agentes.Agente.Base;
 using Service.IA.Agentes.Skill;
+using Service.IA.Model;
 using System.Text.Json;
 
 namespace Service.IA.Agentes.Agente
 {
     public class Agente : AgenteBase, IAgenteBase
     {
+        public ConsumoBase Consumo { get; set; } = new ();
         internal ChatClientAgent? AgentGuardRailIn { get; set; } = null;
         internal ChatClientAgent? AgentGuardRailOut { get; set; } = null;
         internal Func<string?, bool>? GuardRailIn { get; set; } = null;
@@ -73,6 +75,9 @@ namespace Service.IA.Agentes.Agente
             if (AgentGuardRailIn != null)
             {
                 var responseGuardRailIn = await AgentGuardRailIn.RunAsync<bool>(Prompt);
+                Consumo.TokenEntrada += responseGuardRailIn.Usage?.InputTokenCount ?? 0;
+                Consumo.TokenSaida += responseGuardRailIn.Usage?.OutputTokenCount ?? 0;
+                Consumo.TokenTotal += responseGuardRailIn.Usage?.TotalTokenCount ?? 0;
                 if (!responseGuardRailIn.Result) return null;
             }
 
@@ -83,6 +88,10 @@ namespace Service.IA.Agentes.Agente
 
             if (Response != null)
             {
+                Consumo.TokenEntrada += Response.Usage?.InputTokenCount ?? 0;
+                Consumo.TokenSaida += Response.Usage?.OutputTokenCount ?? 0;
+                Consumo.TokenTotal += Response.Usage?.TotalTokenCount ?? 0;
+
                 var responseString = string.Empty;
 
                 try
@@ -103,6 +112,9 @@ namespace Service.IA.Agentes.Agente
                 if (AgentGuardRailOut != null)
                 {
                     var responseGuardRailOut = await AgentGuardRailOut.RunAsync<bool>(responseString);
+                    Consumo.TokenEntrada += responseGuardRailOut.Usage?.InputTokenCount ?? 0;
+                    Consumo.TokenSaida += responseGuardRailOut.Usage?.OutputTokenCount ?? 0;
+                    Consumo.TokenTotal += responseGuardRailOut.Usage?.TotalTokenCount ?? 0;
                     if (!responseGuardRailOut.Result) return null;
                 }
             }
@@ -117,6 +129,9 @@ namespace Service.IA.Agentes.Agente
             if (AgentGuardRailIn != null)
             {
                 var responseGuardRailIn = await AgentGuardRailIn.RunAsync<bool>(message);
+                Consumo.TokenEntrada += responseGuardRailIn.Usage?.InputTokenCount ?? 0;
+                Consumo.TokenSaida += responseGuardRailIn.Usage?.OutputTokenCount ?? 0;
+                Consumo.TokenTotal += responseGuardRailIn.Usage?.TotalTokenCount ?? 0;
                 if (!responseGuardRailIn.Result) return null;
             }
 
@@ -126,6 +141,10 @@ namespace Service.IA.Agentes.Agente
 
             if (Response != null)
             {
+                Consumo.TokenEntrada += Response.Usage?.InputTokenCount ?? 0;
+                Consumo.TokenSaida += Response.Usage?.OutputTokenCount ?? 0;
+                Consumo.TokenTotal += Response.Usage?.TotalTokenCount ?? 0;
+
                 var responseString = string.Empty;
 
                 try
@@ -151,6 +170,9 @@ namespace Service.IA.Agentes.Agente
                 if (AgentGuardRailOut != null)
                 {
                     var responseGuardRailOut = await AgentGuardRailOut.RunAsync<bool>(responseString);
+                    Consumo.TokenEntrada += responseGuardRailOut.Usage?.InputTokenCount ?? 0;
+                    Consumo.TokenSaida += responseGuardRailOut.Usage?.OutputTokenCount ?? 0;
+                    Consumo.TokenTotal += responseGuardRailOut.Usage?.TotalTokenCount ?? 0;
                     if (!responseGuardRailOut.Result) return null;
                 }
             }
