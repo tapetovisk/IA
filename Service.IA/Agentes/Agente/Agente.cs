@@ -134,7 +134,7 @@ namespace Service.IA.Agentes.Agente
                 }
                 catch (Exception ex)
                 {
-                    if (Response.Text.IndexOf("properties") > 0 || Response.Text.IndexOf("data") > 0)
+                    if (Response.Text.IndexOf("properties") > 0 && Response.Text.IndexOf("data") > 0)
                     {
                         var doc = JsonDocument.Parse(Response.Text);
                         responseString = doc.RootElement

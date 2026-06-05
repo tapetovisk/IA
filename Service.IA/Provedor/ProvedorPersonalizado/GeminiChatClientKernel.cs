@@ -91,17 +91,16 @@ namespace Service.IA.Provedor.ProvedorPersonalizado
                             items.Add(new Microsoft.SemanticKernel.TextContent(text.Text));
                             break;
 
-                            //// Imagem via URL pública
-                            //case Microsoft.Agents .ImageContent { Uri: not null } img:
-                            //    items.Add(new Microsoft.SemanticKernel.ImageContent(img.Uri));
-                            //    break;
-                            //
-                            //// Imagem via bytes (arquivo local, câmera, upload etc.)
-                            //case Microsoft.Extensions.AI.ImageContent { Data: not null } img:
-                            //    items.Add(new Microsoft.SemanticKernel.ImageContent(
-                            //        img.Data.Value.ToArray(),
-                            //        img.MediaType ?? "image/jpeg"));
-                            //    break;
+                            // Imagem via URL pública
+                            case UriContent  img:
+                                items.Add(new ImageContent(img.Uri));
+                                break;
+                            
+                            case DataContent img:
+                                items.Add(new ImageContent(
+                                    img.Data,
+                                    img.MediaType ?? "image/jpeg"));
+                                break;
                     }
                 }
 
