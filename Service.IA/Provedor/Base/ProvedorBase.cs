@@ -3,6 +3,7 @@ using OpenAI;
 using OpenAI.Embeddings;
 using Service.IA.Model;
 using System.ClientModel;
+using System.ClientModel.Primitives;
 using System.ComponentModel;
 
 namespace Service.IA.Provedor.Base
@@ -89,15 +90,14 @@ namespace Service.IA.Provedor.Base
                 new ApiKeyCredential("local") :
                 new ApiKeyCredential(apiKey.Item2);
 
-            openAIClient = UrlPadrao == url ?
+            var options = new OpenAIClientOptions
+            {
+                Endpoint = new Uri(this.url)
+            };
+
+            openAIClient = this.url.IndexOf("openai") >= 0 ?
                 new OpenAIClient(apiKey.Item2) :
-                new OpenAIClient(
-                    credenciar,
-                    new OpenAIClientOptions
-                    {
-                        Endpoint = new Uri(this.url)
-                    }
-                );
+                new OpenAIClient(credenciar, options);
 
             return openAIClient;
         }
