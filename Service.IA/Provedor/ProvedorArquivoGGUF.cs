@@ -8,9 +8,12 @@ using System.ComponentModel;
 
 namespace Service.IA.Provedor
 {
-    public class ProvedorArquivoGGUF : ProvedorBase, IProvedorArquivoGGUF
+    public class ProvedorArquivoGGUF : ProvedorBase, IProvedorArquivoGGUF, IDisposable
     {
         public override string Descricao { get; set; } = "Arquivo GGUF";
+
+        private LLamaWeights? _weights;
+        private LLamaContext? _context;
 
         [Description("Cria um cliente de chat usando um modelo GGUF a partir de um arquivo local.")]
         public override IChatClient SetMedolo(
@@ -22,12 +25,20 @@ namespace Service.IA.Provedor
                 GpuLayerCount = 0, // 0 = CPU, >0 = offload camadas para GPU
             };
 
-            using var weights = LLamaWeights.LoadFromFile(parameters);
-            using var context = weights.CreateContext(parameters);
-            var executor = new InteractiveExecutor(context);
+            _weights?.Dispose();
+            _context?.Dispose();
 
-            var chatClient = executor.AsChatClient();
-            return chatClient;
+            _weights = LLamaWeights.LoadFromFile(parameters);
+            _context = _weights.CreateContext(parameters);
+            var executor = new InteractiveExecutor(_context);
+
+            return executor.AsChatClient();
+        }
+
+        public void Dispose()
+        {
+            _context?.Dispose();
+            _weights?.Dispose();
         }
     }
 }

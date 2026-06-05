@@ -16,7 +16,7 @@ namespace IA.TesteAgente.Servico
         public Agente Agente { get; set; } = new();
         public string idSessao { get; set; } = "";
         public EmbeddingClient? embeddingClient { get; set; } = null;
-        public Consumo Consumo { get; set; } = new ();
+        public Consumo Consumo { get; set; } = new();
 
         public async Task SetAgente(string idAgente, string SessaoID = "")
         {
@@ -27,7 +27,8 @@ namespace IA.TesteAgente.Servico
             var ModeloModel = await context.ModeloLLM.Where(a => a.id == AgenteModel.idModeloLLM).FirstOrDefaultAsync();
 
             var provedor = _serviceProvider.GetRequiredKeyedService<IProvedorBase>(provedorModel.ServicoProvedor);
-            provedor.SetProvedor(provedorModel.Url, new Tuple<string, string>(provedorModel.TagKey, provedorModel.ApiKey), provedorModel.TimeoutMinutes);
+            if (provedorModel.ServicoProvedor != EnumProvedor.ArquivoGGUF)
+                provedor.SetProvedor(provedorModel.Url, new Tuple<string, string>(provedorModel.TagKey, provedorModel.ApiKey), provedorModel.TimeoutMinutes);
             var ChatClient = provedor.SetMedolo(ModeloModel.Modelo);
 
             if (ModeloModel.TipoModelo.Any(a => a == EnumTipoModelo.Embedding))
