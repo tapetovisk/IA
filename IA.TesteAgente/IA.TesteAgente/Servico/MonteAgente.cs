@@ -3,6 +3,7 @@ using IA.TesteAgente.Model;
 using IA.TesteAgente.Servico.RAG;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.AI;
+using ModelContextProtocol.Client;
 using OpenAI.Embeddings;
 using Service.IA.Agentes.Agente;
 using Service.IA.Enum;
@@ -17,6 +18,7 @@ namespace IA.TesteAgente.Servico
         public string idSessao { get; set; } = "";
         public EmbeddingClient? embeddingClient { get; set; } = null;
         public Consumo Consumo { get; set; } = new();
+        private readonly List<McpClient> _mcpClients = new();
 
         public async Task SetAgente(string idAgente, string SessaoID = "")
         {
@@ -121,16 +123,18 @@ namespace IA.TesteAgente.Servico
             }
             else if (Ferramenta.TipoFerramenta == EnumTipoFerramenta.MCPLocal)
             {
-                var ToolLocal = await new BuscaProvedor().CriarToolMCPLocal(Ferramenta.Nome, Ferramenta.Command, Ferramenta.JsonArguments);
-                if (ToolLocal == null) return;
-                Tool = ToolLocal.ToList();
+                var (client, tools) = await new BuscaProvedor().CriarToolMCPLocal(Ferramenta.Nome, Ferramenta.Command, Ferramenta.JsonArguments);
+                if (tools == null) return;
+                Tool = tools.ToList();
+                _mcpClients.Add(client);
 
             }
             else if (Ferramenta.TipoFerramenta == EnumTipoFerramenta.MCPHttp)
             {
-                var ToolLocal = await new BuscaProvedor().CriarToolHttp(Ferramenta.Url, Ferramenta.JsonArguments);
-                if (ToolLocal == null) return;
-                Tool = ToolLocal.ToList();
+                var (client, tools) = await new BuscaProvedor().CriarToolHttp(Ferramenta.Url, Ferramenta.JsonArguments);
+                if (tools == null) return;
+                Tool = tools.ToList();
+                _mcpClients.Add(client);
             }
 
             Agente.SetFuncao(Tool);
@@ -159,5 +163,12 @@ namespace IA.TesteAgente.Servico
             Agente.SetContextProvider(RagServico);
         }
 
+        public async ValueTask DisposeAsync()
+        {
+            foreach (var client in _mcpClients)
+                await client.DisposeAsync();
+
+            _mcpClients.Clear();
+        }
     }
 }

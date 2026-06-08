@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.AI;
+﻿using Google.GenAI;
+using Microsoft.Extensions.AI;
 using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol;
 using Service.IA.Provedor.Base;
@@ -41,11 +42,15 @@ namespace Service.IA.Util
             return AIFunctionFactory.Create(metodo, instancia);
         }
 
-        public async Task<IList<AITool>> CriarToolHttp(string url, string argumentos)
+        public async Task<(McpClient Client, IList<AITool> Tools)> CriarToolHttp(string url, string argumentos)
         {
-            var argumentosDict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(argumentos) ?? 
-                new Dictionary<string, string>();
+            var argumentosDict = new Dictionary<string, string>();
 
+            if(!string.IsNullOrEmpty(argumentos))
+            {
+                argumentosDict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(argumentos) ?? 
+                    new Dictionary<string, string>();
+            }
 
             var Config = new HttpClientTransport(new HttpClientTransportOptions
             {
@@ -55,12 +60,12 @@ namespace Service.IA.Util
                 AdditionalHeaders = new Dictionary<string, string>(argumentosDict)
             });
 
-            await using var client = await McpClient.CreateAsync(Config);
+            var client = await McpClient.CreateAsync(Config);
             var tools = await client.ListToolsAsync();
-            return tools.Cast<AITool>().ToList();
+            return (client, tools.Cast<AITool>().ToList());
         }
 
-        public async Task<IList<AITool>> CriarToolMCPLocal(string nome, string comando, string argumentos)
+        public async Task<(McpClient Client, IList<AITool> Tools)> CriarToolMCPLocal(string nome, string comando, string argumentos)
         {
             var serverConfig = new StdioClientTransportOptions
             {
@@ -71,7 +76,7 @@ namespace Service.IA.Util
 
             var mcpClient = await McpClient.CreateAsync(new StdioClientTransport(serverConfig));
             var tools = await mcpClient.ListToolsAsync();
-            return tools.Cast<AITool>().ToList();
+            return (mcpClient, tools.Cast<AITool>().ToList());
         }
 
         private Type? ResolverTipo(string caminhoClasse)
