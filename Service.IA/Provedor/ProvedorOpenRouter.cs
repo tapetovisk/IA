@@ -1,7 +1,11 @@
 ﻿using Service.IA.Enum;
 using Service.IA.Model;
+using Service.IA.Model.Mistral;
+using Service.IA.Model.OpenRouter;
 using Service.IA.Provedor.Base;
 using Service.IA.Provedor.Interface;
+using System.ComponentModel;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Service.IA.Provedor
 {
@@ -11,72 +15,48 @@ namespace Service.IA.Provedor
         public override string UrlPadrao { get; set; } = "https://openrouter.ai/api/v1";
         public override string TagKey { get; set; } = "Authorization";
 
-        public async override Task<List<Modelos>> ModeloPadrao() => new List<Modelos>()
+        [Description("Retorna a lista de todos os modelos disponíveis no servidor Mistral via GET /api/models.")]
+        public async Task<List<ModeloOpenRouter>> GetListaModelos()
         {
-            new Modelos()
-                {
-                    Descricao = "openai/gpt-oss-120b:free",
-                    Modelo = "openai/gpt-oss-120b:free",
-                    TipoModelo = new EnumTipoModelo[] { EnumTipoModelo.Texto },
-                    Quantizacao = "8-bit"
-                },
-            new Modelos()
-                {
-                    Descricao = "google/gemma-4-31b-it:free",
-                    Modelo = "google/gemma-4-31b-it:free",
-                    TipoModelo = new EnumTipoModelo[] { EnumTipoModelo.Texto },
-                    Quantizacao = "8-bit"
-                },
-            new Modelos()
-                {
-                    Descricao = "nvidia/llama-nemotron-embed-vl-1b-v2:free",
-                    Modelo = "nvidia/llama-nemotron-embed-vl-1b-v2:free",
-                    TipoModelo = new EnumTipoModelo[] { EnumTipoModelo.Embedding },
-                    Quantizacao = "8-bit"
-                },
-            new Modelos()
-                {
-                    Descricao = "sourceful/riverflow-v2.5-fast:free",
-                    Modelo = "sourceful/riverflow-v2.5-fast:free",
-                    TipoModelo = new EnumTipoModelo[] { EnumTipoModelo.Imagem },
-                    Quantizacao = "8-bit"
-                },
-            new Modelos()
-                {
-                    Descricao = "sourceful/riverflow-v2.5-pro:free",
-                    Modelo = "sourceful/riverflow-v2.5-pro:free",
-                    TipoModelo = new EnumTipoModelo[] { EnumTipoModelo.Imagem },
-                    Quantizacao = "8-bit"
-                },
-            new Modelos()
-                {
-                    Descricao = "moonshotai/kimi-k2.6:free",
-                    Modelo = "moonshotai/kimi-k2.6:free",
-                    TipoModelo = new EnumTipoModelo[] { EnumTipoModelo.Texto },
-                    Quantizacao = "8-bit"
-                },
-            new Modelos()
-                {
-                    Descricao = "qwen/qwen3-next-80b-a3b-instruct:free",
-                    Modelo = "qwen/qwen3-next-80b-a3b-instruct:free",
-                    TipoModelo = new EnumTipoModelo[] { EnumTipoModelo.Texto },
-                    Quantizacao = "8-bit"
-                },
-            new Modelos()
-                {
-                    Descricao = "meta-llama/llama-3.3-70b-instruct:free",
-                    Modelo = "meta-llama/llama-3.3-70b-instruct:free",
-                    TipoModelo = new EnumTipoModelo[] { EnumTipoModelo.Texto },
-                    Quantizacao = "8-bit"
-                },
-            new Modelos()
-                {
-                    Descricao = "qwen/qwen3-coder:free",
-                    Modelo = "qwen/qwen3-coder:free",
-                    TipoModelo = new EnumTipoModelo[] { EnumTipoModelo.Texto },
-                    Quantizacao = "8-bit"
-                },
+            var response = await _httpClient.GetAsync("v1/models");
 
-        };
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var modelos = System.Text.Json.JsonSerializer.Deserialize<LstModelosOpenRouter>(content);
+                return modelos?.data ?? new List<ModeloOpenRouter>();
+            }
+            return new List<ModeloOpenRouter>();
+        }
+
+        public async override Task<List<Modelos>> ModeloPadrao()
+        {
+            var lista = await GetListaModelos();
+
+            var modelos = new List<Modelos>();
+
+            foreach (var item in lista.Where(d => d.pricing.prompt == "0" && d.pricing.completion == "0"))
+            {
+                var modelo = new Modelos
+                {
+                    Descricao = item.description,
+                    Modelo = item.id
+                };
+
+                var tipos = new List<EnumTipoModelo>();
+                if (item.architecture.input_modalities.Any(m => m == "text")) tipos.Add(EnumTipoModelo.Texto);
+                if (item.architecture.input_modalities.Any(m => m == "image")) tipos.Add(EnumTipoModelo.Imagem);
+                if (item.architecture.input_modalities.Any(m => m == "audio")) tipos.Add(EnumTipoModelo.Audio);
+                if (item.architecture.input_modalities.Any(m => m == "embeddings")) tipos.Add(EnumTipoModelo.Embedding);
+                if (item.architecture.input_modalities.Any(m => m == "video")) tipos.Add(EnumTipoModelo.Video);
+                if (item.architecture.input_modalities.Any(m => m == "file")) tipos.Add(EnumTipoModelo.Ferramenta);
+
+                modelo.TipoModelo = tipos.ToArray();
+                modelos.Add(modelo);
+            }
+
+            return modelos;
+
+        }
     }
 }

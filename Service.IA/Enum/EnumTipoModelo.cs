@@ -12,5 +12,8 @@
         Conclusao = 8,
         Imagem = 9,
         Codigo = 10,
+        Ocr = 11,
+        Classificacao = 12,
+        FineTuning = 13,
     }
 }
