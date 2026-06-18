@@ -45,6 +45,8 @@ namespace Service.IA.Provedor.Base
 
             if (!string.IsNullOrEmpty(apiKey.Item1) || !string.IsNullOrEmpty(apiKey.Item2))
             {
+                if (!string.IsNullOrEmpty(apiKey.Item1)) TagKey = apiKey.Item1;
+
                 if (TagKey == "Authorization" || string.IsNullOrEmpty(apiKey.Item1))
                 {
                     _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey.Item2);
