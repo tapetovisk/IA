@@ -1,10 +1,10 @@
-﻿using Azure.AI.Projects;
-using Azure.Identity;
+﻿using Microsoft.Extensions.AI;
 using OpenAI;
 using Service.IA.Model;
 using Service.IA.Model.MicrosoftFoundry;
 using Service.IA.Provedor.Base;
 using Service.IA.Provedor.Interface;
+using System.ClientModel;
 using System.ComponentModel;
 
 namespace Service.IA.Provedor
@@ -21,13 +21,28 @@ namespace Service.IA.Provedor
 
         internal override OpenAIClient SetProvedor()
         {
-            var Foundry = new AIProjectClient(
-                new Uri(base.url),
-                new DefaultAzureCredential());
+            var options = new OpenAIClientOptions
+            {
+                Endpoint = new Uri(this.url)
+            };
 
-            openAIClient = Foundry.ProjectOpenAIClient;
+            openAIClient = new OpenAIClient(new ApiKeyCredential("local-key"), options);
 
             return openAIClient;
+        }
+
+        [Description("Retorna um IChatClient para o modelo especificado a partir do openAIClient configurado.")]
+        public override IChatClient SetMedolo(
+            [Description("Identificador do modelo de linguagem (ex.: \"gpt-4o\", \"llama3\").")] string model)
+        {
+            var options = new OpenAIClientOptions
+            {
+                Endpoint = new Uri(this.url)
+            };
+
+            openAIClient = new OpenAIClient(new ApiKeyCredential("local-key"), options);
+
+            return openAIClient.GetChatClient(model).AsIChatClient();
         }
 
         [Description("Retorna a lista de todos os modelos disponíveis no servidor Ollama via GET /api/models.")]
