@@ -1,6 +1,8 @@
 ﻿using Azure.AI.Projects;
 using Azure.Identity;
 using OpenAI;
+using Service.IA.Model;
+using Service.IA.Model.MicrosoftFoundry;
 using Service.IA.Provedor.Base;
 using Service.IA.Provedor.Interface;
 using System.ComponentModel;
@@ -27,5 +29,38 @@ namespace Service.IA.Provedor
 
             return openAIClient;
         }
+
+        [Description("Retorna a lista de todos os modelos disponíveis no servidor Ollama via GET /api/models.")]
+        public async Task<ModelosMicrosoftFoundry> GetListaModelos()
+        {
+            var response = await _httpClient.GetAsync("/openai/models");
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                var s = content.Replace("[\"", "").Replace("\"]", "").Split("\",\"");
+
+                return new ModelosMicrosoftFoundry() { modelo = s };
+            }
+            return new ModelosMicrosoftFoundry();
+        }
+
+        public async override Task<List<Modelos>> ModeloPadrao()
+        {
+            var detalhes = await GetListaModelos();
+
+            var modelos = new List<Modelos>();
+
+            foreach (var item in detalhes.modelo)
+            {
+                modelos.Add(new Modelos()
+                {
+                    Modelo = item
+                });
+            }
+            return modelos;
+        }
+
     }
 }
