@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.AI;
-using OpenAI;
+﻿using OpenAI;
 using Service.IA.Model;
 using Service.IA.Model.MicrosoftFoundry;
 using Service.IA.Provedor.Base;
@@ -31,23 +30,11 @@ namespace Service.IA.Provedor
             return openAIClient;
         }
 
-        [Description("Retorna um IChatClient para o modelo especificado a partir do openAIClient configurado.")]
-        public override IChatClient SetMedolo(
-            [Description("Identificador do modelo de linguagem (ex.: \"gpt-4o\", \"llama3\").")] string model)
-        {
-            var options = new OpenAIClientOptions
-            {
-                Endpoint = new Uri(this.url)
-            };
-
-            openAIClient = new OpenAIClient(new ApiKeyCredential("local-key"), options);
-
-            return openAIClient.GetChatClient(model).AsIChatClient();
-        }
-
         [Description("Retorna a lista de todos os modelos disponíveis no servidor Ollama via GET /api/models.")]
         public async Task<ModelosMicrosoftFoundry> GetListaModelos()
         {
+            _httpClient.BaseAddress = new Uri(this.url.Replace("v1", ""));
+
             var response = await _httpClient.GetAsync("/openai/models");
 
             if (response.IsSuccessStatusCode)
