@@ -35,6 +35,8 @@ namespace IA.TesteAgente.Servico
 
             if (ModeloModel.TipoModelo.Any(a => a == EnumTipoModelo.Embedding))
             {
+                var s = provedor.openAIClient.GetAudioClient(ModeloModel.Modelo);
+                
                 provedor.SetEmbeddingClient(ModeloModel.Modelo);
                 embeddingClient = provedor.embeddingClient;
             }
